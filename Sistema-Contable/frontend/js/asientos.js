@@ -1,0 +1,250 @@
+function escaparHtml(texto) {
+  if (texto === null || texto === undefined) return '';
+  return String(texto).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+let asientos = [];
+let cuentasDisponibles = [];
+let contadorLinea = 0;
+
+async function cargarCuentas() {
+  try {
+    cuentasDisponibles = (await llamarApi('/cuentas-contables')).filter((c) => c.acepta_movimiento && c.activa);
+  } catch (err) {
+    mostrarMensaje(err.message, 'error');
+  }
+}
+
+// ---------- Buscar / listar ----------
+
+document.getElementById('boton-buscar-asientos').addEventListener('click', buscarAsientos);
+
+async function buscarAsientos() {
+  const desde = document.getElementById('filtro-desde').value;
+  const hasta = document.getElementById('filtro-hasta').value;
+  const estado = document.getElementById('filtro-estado').value;
+
+  const params = [];
+  if (desde) params.push('desde=' + desde);
+  if (hasta) params.push('hasta=' + hasta);
+  if (estado) params.push('estado=' + estado);
+
+  try {
+    asientos = await llamarApi('/asientos' + (params.length ? '?' + params.join('&') : ''));
+    dibujarTabla();
+  } catch (err) {
+    mostrarMensaje(err.message, 'error');
+  }
+}
+
+function dibujarTabla() {
+  const tbody = document.getElementById('tabla-asientos');
+  if (asientos.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="estado-vacio">No hay asientos con esos filtros.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = asientos.map((a) => (
+    '<tr>' +
+    '<td>' + escaparHtml(a.numero_asiento) + '</td>' +
+    '<td>' + formatearFecha(a.fecha) + '</td>' +
+    '<td>' + escaparHtml(a.descripcion || '') + '</td>' +
+    '<td>' + escaparHtml(a.documento_origen_tipo || 'Manual') + '</td>' +
+    '<td><span class="etiqueta-estado ' + (a.estado === 'contabilizado' ? 'activo' : 'pendiente') + '">' + (a.estado === 'contabilizado' ? 'Contabilizado' : 'Pendiente') + '</span></td>' +
+    '<td class="celda-acciones">' +
+    '<button type="button" class="boton boton-secundario" data-accion="ver" data-id="' + a.id + '">Ver</button> ' +
+    (a.estado === 'pendiente'
+      ? '<button type="button" class="boton boton-primario" data-accion="contabilizar" data-id="' + a.id + '">Contabilizar</button> ' +
+        '<button type="button" class="boton boton-peligro" data-accion="eliminar" data-id="' + a.id + '">Eliminar</button>'
+      : '<button type="button" class="boton boton-secundario" data-accion="reversar" data-id="' + a.id + '">Reversar</button>') +
+    '</td></tr>'
+  )).join('');
+}
+
+document.getElementById('tabla-asientos').addEventListener('click', async (evento) => {
+  const boton = evento.target.closest('[data-accion]');
+  if (!boton) return;
+  const id = boton.dataset.id;
+
+  if (boton.dataset.accion === 'ver') return verDetalle(id);
+
+  if (boton.dataset.accion === 'contabilizar') {
+    if (!confirm('¿Pasar este asiento a Contabilizado? Una vez contabilizado, ya no se edita — solo se reversa.')) return;
+    try {
+      await llamarApi('/asientos/' + id + '/contabilizar', { method: 'POST' });
+      mostrarMensaje('Asiento contabilizado.', 'exito');
+      buscarAsientos();
+    } catch (err) { mostrarMensaje(err.message, 'error'); }
+  }
+
+  if (boton.dataset.accion === 'reversar') {
+    if (!confirm('¿Reversar este asiento? Se creará un asiento nuevo que anula su efecto.')) return;
+    try {
+      await llamarApi('/asientos/' + id + '/reversar', { method: 'POST' });
+      mostrarMensaje('Asiento reversado.', 'exito');
+      buscarAsientos();
+    } catch (err) { mostrarMensaje(err.message, 'error'); }
+  }
+
+  if (boton.dataset.accion === 'eliminar') {
+    if (!confirm('¿Eliminar este asiento pendiente?')) return;
+    try {
+      await llamarApi('/asientos/' + id, { method: 'DELETE' });
+      mostrarMensaje('Asiento eliminado.', 'exito');
+      buscarAsientos();
+    } catch (err) { mostrarMensaje(err.message, 'error'); }
+  }
+});
+
+// ---------- Ver detalle ----------
+
+async function verDetalle(id) {
+  try {
+    const a = await llamarApi('/asientos/' + id);
+    document.getElementById('detalle-titulo').textContent = 'Asiento ' + a.numero_asiento;
+    document.getElementById('detalle-info').textContent = formatearFecha(a.fecha) + ' · ' + (a.estado === 'contabilizado' ? 'Contabilizado' : 'Pendiente') + (a.descripcion ? ' · ' + a.descripcion : '');
+    document.getElementById('tabla-detalle-lineas').innerHTML = a.asientos_detalle.map((l) => (
+      '<tr><td>' + escaparHtml(l.cuentas_contables ? l.cuentas_contables.codigo + ' — ' + l.cuentas_contables.nombre : '') + '</td>' +
+      '<td>' + escaparHtml(l.descripcion || '') + '</td>' +
+      '<td style="text-align:right;">' + (Number(l.debito) > 0 ? formatearMonto(l.debito) : '') + '</td>' +
+      '<td style="text-align:right;">' + (Number(l.credito) > 0 ? formatearMonto(l.credito) : '') + '</td></tr>'
+    )).join('');
+    document.getElementById('modal-detalle').style.display = 'block';
+  } catch (err) {
+    mostrarMensaje(err.message, 'error');
+  }
+}
+document.getElementById('boton-cerrar-modal-detalle').addEventListener('click', () => {
+  document.getElementById('modal-detalle').style.display = 'none';
+});
+
+// ---------- Nuevo asiento manual ----------
+
+document.getElementById('boton-nuevo-asiento').addEventListener('click', () => {
+  document.getElementById('form-asiento').reset();
+  document.getElementById('lineas-asiento').innerHTML = '';
+  agregarLinea();
+  agregarLinea();
+  document.getElementById('modal-asiento').style.display = 'block';
+  actualizarTotales();
+});
+document.getElementById('boton-cerrar-modal-asiento').addEventListener('click', () => {
+  document.getElementById('modal-asiento').style.display = 'none';
+});
+
+function agregarLinea() {
+  contadorLinea++;
+  const idLinea = 'linea-' + contadorLinea;
+  const opciones = cuentasDisponibles.map((c) => '<option value="' + c.id + '">' + escaparHtml(c.codigo + ' — ' + c.nombre) + '</option>').join('');
+
+  const div = document.createElement('div');
+  div.className = 'fila-linea-asiento';
+  div.id = idLinea;
+  div.innerHTML =
+    '<select class="linea-cuenta">' + opciones + '</select>' +
+    '<input type="number" class="linea-debito" placeholder="Débito" step="0.01" min="0" value="0" />' +
+    '<input type="number" class="linea-credito" placeholder="Crédito" step="0.01" min="0" value="0" />' +
+    '<button type="button" class="boton boton-peligro" data-quitar="' + idLinea + '">✕</button>';
+
+  document.getElementById('lineas-asiento').appendChild(div);
+  div.querySelector('.linea-debito').addEventListener('input', actualizarTotales);
+  div.querySelector('.linea-credito').addEventListener('input', actualizarTotales);
+}
+document.getElementById('boton-agregar-linea').addEventListener('click', agregarLinea);
+
+document.getElementById('lineas-asiento').addEventListener('click', (evento) => {
+  const boton = evento.target.closest('[data-quitar]');
+  if (!boton) return;
+  document.getElementById(boton.dataset.quitar).remove();
+  actualizarTotales();
+});
+
+function actualizarTotales() {
+  let debito = 0, credito = 0;
+  document.querySelectorAll('.linea-debito').forEach((i) => { debito += Number(i.value) || 0; });
+  document.querySelectorAll('.linea-credito').forEach((i) => { credito += Number(i.value) || 0; });
+
+  document.getElementById('total-debito').textContent = debito.toFixed(2);
+  document.getElementById('total-credito').textContent = credito.toFixed(2);
+
+  const balance = document.getElementById('estado-balance');
+  if (Math.abs(debito - credito) < 0.01 && debito > 0) {
+    balance.textContent = '✓ Cuadrado';
+    balance.className = '';
+  } else {
+    balance.textContent = '✕ No cuadra';
+    balance.className = 'desbalanceado';
+  }
+}
+
+document.getElementById('form-asiento').addEventListener('submit', async (evento) => {
+  evento.preventDefault();
+
+  const lineas = [...document.querySelectorAll('#lineas-asiento .fila-linea-asiento')].map((div) => ({
+    cuenta_contable_id: div.querySelector('.linea-cuenta').value,
+    debito: Number(div.querySelector('.linea-debito').value) || 0,
+    credito: Number(div.querySelector('.linea-credito').value) || 0,
+  })).filter((l) => l.debito > 0 || l.credito > 0);
+
+  const cuerpo = {
+    fecha: document.getElementById('asiento-fecha').value,
+    descripcion: document.getElementById('asiento-descripcion').value.trim(),
+    lineas,
+  };
+
+  try {
+    await llamarApi('/asientos', { method: 'POST', body: JSON.stringify(cuerpo) });
+    mostrarMensaje('Asiento creado.', 'exito');
+    document.getElementById('modal-asiento').style.display = 'none';
+    buscarAsientos();
+  } catch (err) {
+    mostrarMensaje(err.message, 'error');
+  }
+});
+
+// ---------- Proceso en lote ----------
+
+document.getElementById('boton-proceso-contabilizar').addEventListener('click', async () => {
+  const desde = document.getElementById('proceso-desde').value;
+  const hasta = document.getElementById('proceso-hasta').value;
+  if (!desde || !hasta) { mostrarMensaje('Indica el rango de fechas del proceso.', 'error'); return; }
+  if (!confirm('¿Contabilizar todos los asientos pendientes entre ' + desde + ' y ' + hasta + '?')) return;
+
+  try {
+    const r = await llamarApi('/asientos/proceso/contabilizar', { method: 'POST', body: JSON.stringify({ desde, hasta }) });
+    mostrarMensaje(r.procesados + ' asiento(s) contabilizado(s).', 'exito');
+    consultarEstatusProceso();
+    buscarAsientos();
+  } catch (err) { mostrarMensaje(err.message, 'error'); }
+});
+
+document.getElementById('boton-proceso-desprocesar').addEventListener('click', async () => {
+  const desde = document.getElementById('proceso-desde').value;
+  const hasta = document.getElementById('proceso-hasta').value;
+  if (!desde || !hasta) { mostrarMensaje('Indica el rango de fechas del proceso.', 'error'); return; }
+  if (!confirm('¿Devolver a Pendiente todos los asientos contabilizados entre ' + desde + ' y ' + hasta + '? (Los reversos no se ven afectados)')) return;
+
+  try {
+    const r = await llamarApi('/asientos/proceso/desprocesar', { method: 'POST', body: JSON.stringify({ desde, hasta }) });
+    mostrarMensaje(r.desprocesados + ' asiento(s) devuelto(s) a Pendiente.', 'exito');
+    consultarEstatusProceso();
+    buscarAsientos();
+  } catch (err) { mostrarMensaje(err.message, 'error'); }
+});
+
+async function consultarEstatusProceso() {
+  const desde = document.getElementById('proceso-desde').value;
+  const hasta = document.getElementById('proceso-hasta').value;
+  const params = [];
+  if (desde) params.push('desde=' + desde);
+  if (hasta) params.push('hasta=' + hasta);
+
+  try {
+    const r = await llamarApi('/asientos/proceso/estatus' + (params.length ? '?' + params.join('&') : ''));
+    document.getElementById('proceso-estatus').textContent = r.pendientes + ' pendiente(s) · ' + r.contabilizados + ' contabilizado(s) · ' + r.total + ' en total, en este rango.';
+  } catch (err) { /* silencioso */ }
+}
+document.getElementById('proceso-desde').addEventListener('change', consultarEstatusProceso);
+document.getElementById('proceso-hasta').addEventListener('change', consultarEstatusProceso);
+
+cargarCuentas();
+buscarAsientos();

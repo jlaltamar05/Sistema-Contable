@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Períodos Contables — Sistema Administrativo</title>
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body class="pantalla-ancha" data-modulo="periodos-contables">
+  <div class="app-shell">
+    <nav class="barra-lateral" id="barra-lateral"></nav>
+
+    <main class="contenido">
+      <div class="encabezado-pagina">
+        <div>
+          <h1>Períodos Contables</h1>
+          <p>Cierra un mes para bloquear todo el administrativo de esa fecha (facturas, compras, etc.). Reabrir un período cerrado requiere el rol de Jefe de Contabilidad, y mientras esté reabierto, el administrativo queda bloqueado.</p>
+        </div>
+      </div>
+
+      <div id="caja-mensaje" class="mensaje"></div>
+
+      <section class="panel">
+        <h2>Cerrar un período</h2>
+        <div class="formulario-grid">
+          <div class="campo">
+            <label for="cerrar-anio">Año</label>
+            <input type="number" id="cerrar-anio" min="2000" max="2100" />
+          </div>
+          <div class="campo">
+            <label for="cerrar-mes">Mes</label>
+            <select id="cerrar-mes">
+              <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+              <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+              <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+              <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+            </select>
+          </div>
+          <div class="campo" style="justify-content: flex-end;">
+            <button type="button" class="boton boton-primario" id="boton-cerrar-periodo">Cerrar este período</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Historial de períodos</h2>
+        <table>
+          <thead><tr><th>Año</th><th>Mes</th><th>Estado</th><th>Cerrado</th><th>Reabierto</th><th></th></tr></thead>
+          <tbody id="tabla-periodos"></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/utilidades.js"></script>
+  <script src="js/navegacion.js"></script>
+  <script src="js/periodos-contables.js"></script>
+</body>
+</html>
