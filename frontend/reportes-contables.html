@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reportes Contables — Sistema Administrativo</title>
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body class="pantalla-ancha" data-modulo="reportes-contables">
+  <div class="app-shell">
+    <nav class="barra-lateral" id="barra-lateral"></nav>
+
+    <main class="contenido">
+      <div class="encabezado-pagina">
+        <div>
+          <h1>Reportes Contables</h1>
+          <p>Libro Diario y Balance de Comprobación. Todos los reportes se pueden filtrar por estatus del asiento.</p>
+        </div>
+      </div>
+
+      <div id="caja-mensaje" class="mensaje"></div>
+
+      <section class="panel">
+        <div class="formulario-grid">
+          <div class="campo">
+            <label for="reporte-tipo">Reporte</label>
+            <select id="reporte-tipo">
+              <option value="libro-diario">Libro Diario</option>
+              <option value="balance-comprobacion">Balance de Comprobación</option>
+            </select>
+          </div>
+          <div class="campo"><label for="reporte-desde">Desde</label><input type="date" id="reporte-desde" /></div>
+          <div class="campo"><label for="reporte-hasta">Hasta</label><input type="date" id="reporte-hasta" /></div>
+          <div class="campo">
+            <label for="reporte-estado">Estatus del asiento</label>
+            <select id="reporte-estado">
+              <option value="todos">Contabilizados y Pendientes</option>
+              <option value="contabilizado">Solo Contabilizados</option>
+              <option value="pendiente">Solo Pendientes</option>
+            </select>
+          </div>
+          <div class="campo" style="justify-content: flex-end;">
+            <button type="button" class="boton boton-primario" id="boton-generar-reporte">Generar</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-resultado" style="display: none;">
+        <h2 id="resultado-titulo"></h2>
+        <div style="overflow-x: auto;"><table id="tabla-reporte"></table></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/utilidades.js"></script>
+  <script src="js/navegacion.js"></script>
+  <script src="js/reportes-contables.js"></script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plan de Cuentas — Sistema Administrativo</title>
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body class="pantalla-ancha" data-modulo="plan-cuentas">
+  <div class="app-shell">
+    <nav class="barra-lateral" id="barra-lateral"></nav>
+
+    <main class="contenido">
+      <div class="encabezado-pagina">
+        <div>
+          <h1>Plan de Cuentas</h1>
+          <p>El catálogo de cuentas contables de esta compañía. Las cuentas "título" (sin marcar "Acepta movimiento") solo agrupan; los asientos siempre van contra una cuenta de detalle.</p>
+        </div>
+      </div>
+
+      <div id="caja-mensaje" class="mensaje"></div>
+
+      <section class="panel">
+        <h2 id="titulo-formulario">Nueva cuenta</h2>
+        <form id="formulario-cuenta">
+          <div class="formulario-grid">
+            <div class="campo">
+              <label for="cuenta-codigo">Código *</label>
+              <input type="text" id="cuenta-codigo" autocomplete="off" placeholder="Ej. 1101" required />
+            </div>
+            <div class="campo campo-ancho">
+              <label for="cuenta-nombre">Nombre *</label>
+              <input type="text" id="cuenta-nombre" autocomplete="off" placeholder="Ej. Banco Mercantil" required />
+            </div>
+            <div class="campo">
+              <label for="cuenta-tipo">Tipo *</label>
+              <select id="cuenta-tipo" required>
+                <option value="activo">Activo</option>
+                <option value="pasivo">Pasivo</option>
+                <option value="patrimonio">Patrimonio</option>
+                <option value="ingreso">Ingreso</option>
+                <option value="gasto">Gasto</option>
+                <option value="costo">Costo</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="cuenta-padre">Cuenta padre (opcional)</label>
+              <select id="cuenta-padre"><option value="">(ninguna — cuenta de primer nivel)</option></select>
+            </div>
+            <div class="campo">
+              <label for="cuenta-activa" style="display:flex; align-items:center; gap:6px;">
+                <input type="checkbox" id="cuenta-acepta-movimiento" checked style="width:auto;" /> Acepta movimiento
+              </label>
+            </div>
+            <div class="campo" id="campo-activa" style="display:none;">
+              <label style="display:flex; align-items:center; gap:6px;">
+                <input type="checkbox" id="cuenta-activa" checked style="width:auto;" /> Activa
+              </label>
+            </div>
+          </div>
+          <div class="acciones-formulario">
+            <button type="submit" class="boton boton-primario" id="boton-guardar-cuenta">Guardar</button>
+            <button type="button" class="boton boton-secundario" id="boton-cancelar-cuenta" style="display:none;">Cancelar edición</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2>Cuentas registradas</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th><th>Nombre</th><th>Tipo</th><th>Cuenta padre</th><th>Acepta mov.</th><th>Estado</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="tabla-cuentas"></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/utilidades.js"></script>
+  <script src="js/navegacion.js"></script>
+  <script src="js/plan-cuentas.js"></script>
+</body>
+</html>

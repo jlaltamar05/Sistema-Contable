@@ -1,0 +1,783 @@
+/* ============================================================
+   Estilos compartidos - Sistema de Contratos
+   Paleta: azul noche (confianza/estabilidad) + ámbar (acción)
+   ============================================================ */
+
+:root {
+  --azul-noche: #16233d;
+  --azul-noche-suave: #223357;
+  --papel: #f6f5f1;
+  --papel-panel: #ffffff;
+  --linea: #e2e0d8;
+  --texto: #1b1f27;
+  --texto-suave: #6b7280;
+  --ambar: #c8792f;
+  --ambar-oscuro: #a3611f;
+  --verde-ok: #2f6f4e;
+  --rojo-alerta: #b3432b;
+
+  --radio: 6px;
+  --sombra: 0 1px 2px rgba(22, 35, 61, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--papel);
+  color: var(--texto);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ---------- Estructura general ---------- */
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
+}
+
+.barra-lateral {
+  background: var(--azul-noche);
+  color: #f1f0ec;
+  padding: 24px 16px;
+}
+
+.barra-lateral .marca {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  margin-bottom: 28px;
+  color: #f1f0ec;
+}
+
+.barra-lateral .marca span {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: #9fabc4;
+  margin-top: 2px;
+}
+
+.nav-modulos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-modulos li + li {
+  margin-top: 2px;
+}
+
+.nav-modulos a {
+  display: block;
+  padding: 9px 12px;
+  border-radius: var(--radio);
+  color: #cbd3e3;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.nav-modulos a:hover {
+  background: var(--azul-noche-suave);
+  color: #ffffff;
+}
+
+.nav-modulos a.activo {
+  background: var(--ambar);
+  color: #1b1200;
+  font-weight: 600;
+}
+
+.categoria-nav {
+  margin-bottom: 4px;
+}
+
+.categoria-nav summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9fabc4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.categoria-nav summary::-webkit-details-marker {
+  display: none;
+}
+
+.categoria-nav summary::after {
+  content: '›';
+  transform: rotate(90deg);
+  transition: transform 0.15s ease;
+  font-size: 14px;
+}
+
+.categoria-nav[open] summary::after {
+  transform: rotate(-90deg);
+}
+
+.categoria-nav summary:hover {
+  color: #ffffff;
+}
+
+.categoria-nav .nav-modulos {
+  padding: 2px 0 6px;
+}
+
+.contenido {
+  padding: 32px 40px;
+  max-width: 1040px;
+}
+
+/* En pantallas angostas, la barra lateral pasa a ser una franja
+   horizontal arriba, para que nada se desborde de lado a lado. */
+@media (max-width: 720px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .barra-lateral {
+    padding: 14px 16px;
+  }
+
+  .barra-lateral .marca {
+    margin-bottom: 12px;
+  }
+
+  .nav-modulos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .nav-modulos li + li {
+    margin-top: 0;
+  }
+
+  .contenido {
+    padding: 20px 16px;
+  }
+}
+
+.encabezado-pagina {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.encabezado-pagina h1 {
+  font-size: 22px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.encabezado-pagina p {
+  margin: 4px 0 0;
+  color: var(--texto-suave);
+  font-size: 13.5px;
+}
+
+/* ---------- Paneles / tarjetas ---------- */
+
+.panel {
+  background: var(--papel-panel);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.panel h2 {
+  font-size: 15px;
+  margin: 0 0 16px;
+  font-weight: 600;
+}
+
+/* ---------- Formularios ---------- */
+
+.formulario-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.campo label {
+  font-size: 12.5px;
+  color: var(--texto-suave);
+  font-weight: 600;
+}
+
+.campo input,
+.campo select {
+  padding: 8px 10px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  font-size: 14px;
+  background: var(--papel-panel);
+  color: var(--texto);
+}
+
+.campo input:focus,
+.campo select:focus {
+  outline: 2px solid var(--ambar);
+  outline-offset: 1px;
+  border-color: var(--ambar);
+}
+
+.campo.campo-ancho {
+  grid-column: span 2;
+}
+
+.campo textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  font-size: 14px;
+  background: var(--papel-panel);
+  color: var(--texto);
+  font-family: inherit;
+  resize: vertical;
+}
+
+.campo textarea:focus {
+  outline: 2px solid var(--ambar);
+  outline-offset: 1px;
+  border-color: var(--ambar);
+}
+
+.acciones-formulario {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ---------- Botones ---------- */
+
+.boton {
+  border: none;
+  border-radius: var(--radio);
+  padding: 9px 16px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.boton-primario {
+  background: var(--ambar);
+  color: #1b1200;
+}
+
+.boton-primario:hover {
+  background: var(--ambar-oscuro);
+}
+
+.boton-secundario {
+  background: transparent;
+  color: var(--texto-suave);
+  border: 1px solid var(--linea);
+}
+
+.boton-secundario:hover {
+  border-color: var(--texto-suave);
+  color: var(--texto);
+}
+
+.boton-peligro {
+  background: transparent;
+  color: var(--rojo-alerta);
+  border: 1px solid var(--linea);
+  padding: 9px 16px;
+  font-size: 13.5px;
+}
+
+.boton-peligro:hover {
+  background: rgba(179, 67, 43, 0.08);
+  border-color: var(--rojo-alerta);
+}
+
+/* ---------- Tabla ---------- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+thead th {
+  text-align: left;
+  padding: 8px 10px;
+  color: var(--texto-suave);
+  font-weight: 600;
+  border-bottom: 1px solid var(--linea);
+  font-size: 12.5px;
+}
+
+tbody td {
+  padding: 10px 10px;
+  border-bottom: 1px solid var(--linea);
+}
+
+tbody tr:hover {
+  background: #fbfaf7;
+}
+
+.celda-acciones {
+  display: flex;
+  gap: 6px;
+}
+
+/* ---------- Estados vacíos y mensajes ---------- */
+
+.estado-vacio {
+  padding: 28px 10px;
+  text-align: center;
+  color: var(--texto-suave);
+  font-size: 13.5px;
+}
+
+.mensaje {
+  padding: 10px 14px;
+  border-radius: var(--radio);
+  font-size: 13.5px;
+  margin-bottom: 16px;
+  display: none;
+}
+
+.mensaje.visible {
+  display: block;
+}
+
+.mensaje.exito {
+  background: rgba(47, 111, 78, 0.1);
+  color: var(--verde-ok);
+  border: 1px solid rgba(47, 111, 78, 0.25);
+}
+
+.mensaje.error {
+  background: rgba(179, 67, 43, 0.08);
+  color: var(--rojo-alerta);
+  border: 1px solid rgba(179, 67, 43, 0.25);
+}
+
+.etiqueta-estado {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.etiqueta-estado.activo,
+.etiqueta-estado.disponible,
+.etiqueta-estado.pagado,
+.etiqueta-estado.despachado,
+.etiqueta-estado.aprobada,
+.etiqueta-estado.emitida,
+.etiqueta-estado.pagada {
+  background: rgba(47, 111, 78, 0.12);
+  color: var(--verde-ok);
+}
+
+.etiqueta-estado.inactivo,
+.etiqueta-estado.vencido,
+.etiqueta-estado.rechazada,
+.etiqueta-estado.anulada {
+  background: rgba(179, 67, 43, 0.1);
+  color: var(--rojo-alerta);
+}
+
+.etiqueta-estado.pendiente,
+.etiqueta-estado.arrendado,
+.etiqueta-estado.vendido {
+  background: rgba(200, 121, 47, 0.14);
+  color: var(--ambar-oscuro);
+}
+
+.grid-articulos {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.fila-articulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: var(--papel-panel);
+}
+
+.fila-articulo:nth-child(even) {
+  background: #f2f1ec;
+}
+
+.fila-articulo.fila-encabezado {
+  background: var(--azul-noche) !important;
+  border-color: var(--azul-noche);
+  color: #cbd3e3;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.col-etiqueta {
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.col-acciones {
+  width: 170px;
+  flex-shrink: 0;
+}
+
+.col-num {
+  width: 100px;
+  flex-shrink: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.fila-articulo .miniatura-fila {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  background: #f1f0ec;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.fila-articulo .miniatura-fila img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.fila-articulo .codigo-fila {
+  width: 100px;
+  flex-shrink: 0;
+  font-size: 13.5px;
+  color: var(--texto);
+}
+
+.fila-articulo .nombre-fila {
+  flex: 1;
+  font-size: 13.5px;
+  min-width: 0;
+}
+
+.fila-articulo.fila-encabezado .codigo-fila,
+.fila-articulo.fila-encabezado .nombre-fila {
+  color: inherit;
+}
+
+@media (max-width: 600px) {
+  .fila-articulo {
+    flex-wrap: wrap;
+  }
+  .fila-articulo .codigo-fila {
+    width: auto;
+  }
+  .fila-articulo .nombre-fila {
+    flex-basis: 100%;
+    order: 3;
+  }
+  .fila-articulo .celda-acciones {
+    flex-basis: 100%;
+    order: 4;
+    margin-top: 4px;
+  }
+  .fila-articulo .celda-acciones button {
+    flex: 1;
+  }
+}
+
+/* ---------- Menú raíz (categorías) — cada una despliega su
+   submenú flotante hacia la derecha al pasar el mouse. ---------- */
+
+.menu-raiz {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.menu-raiz > li + li {
+  margin-top: 2px;
+}
+
+.disparador-categoria {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: var(--radio);
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9fabc4;
+  cursor: default;
+}
+
+.disparador-categoria::after {
+  content: '›';
+  font-size: 14px;
+  text-transform: none;
+}
+
+.categoria-raiz:hover .disparador-categoria,
+.categoria-raiz.activo .disparador-categoria {
+  color: #ffffff;
+  background: var(--azul-noche-suave);
+}
+
+/* ---------- Submenú flotante (ej. "Clientes" dentro de Ventas,
+   agrupando Clientes + Grupo de Clientes) — se abre hacia la
+   derecha al pasar el mouse por encima. ---------- */
+
+.tiene-submenu {
+  position: relative;
+}
+
+.disparador-submenu {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: var(--radio);
+  color: #cbd3e3;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: default;
+}
+
+.disparador-submenu::after {
+  content: '›';
+  font-size: 14px;
+}
+
+.tiene-submenu:hover .disparador-submenu,
+.tiene-submenu.activo .disparador-submenu {
+  background: var(--azul-noche-suave);
+  color: #ffffff;
+}
+
+.submenu-flotante {
+  display: none;
+  position: absolute;
+  left: 100%;
+  top: 0;
+  min-width: 190px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--azul-noche-suave);
+  border-radius: var(--radio);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  z-index: 50;
+}
+
+.tiene-submenu:hover > .submenu-flotante {
+  display: block;
+}
+
+.submenu-flotante li + li {
+  margin-top: 2px;
+}
+
+.submenu-flotante a {
+  display: block;
+  padding: 9px 12px;
+  border-radius: var(--radio);
+  color: #cbd3e3;
+  text-decoration: none;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.submenu-flotante a:hover {
+  background: var(--azul-noche);
+  color: #ffffff;
+}
+
+.submenu-flotante a.activo {
+  background: var(--ambar);
+  color: #1b1200;
+  font-weight: 600;
+}
+
+/* En pantallas angostas (la barra lateral pasa a franja horizontal
+   arriba), no hay espacio a la derecha — el submenú se despliega
+   hacia abajo en su lugar, como el resto. */
+@media (max-width: 720px) {
+  .menu-raiz {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .menu-raiz > li + li {
+    margin-top: 0;
+  }
+
+  .disparador-categoria,
+  .disparador-submenu {
+    cursor: default;
+  }
+
+  /* Sin :hover confiable en táctil — se muestra todo de una vez,
+     como una lista aplanada (sin flotar encima del contenido). */
+  .submenu-flotante {
+    display: block;
+    position: static;
+    box-shadow: none;
+    background: transparent;
+    padding: 2px 0 2px 14px;
+    min-width: 0;
+  }
+}
+
+/* ---------- Pestañas dentro de un formulario o pantalla (ej.
+   Configuración General, maestro de Cliente) ---------- */
+
+.pestanas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border-bottom: 2px solid var(--linea);
+  margin-bottom: 20px;
+}
+
+.pestana-boton {
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--texto-suave);
+}
+
+.pestana-boton.activa {
+  color: var(--texto);
+  border-bottom-color: var(--ambar);
+  font-weight: 600;
+}
+
+.panel-pestana {
+  display: none;
+}
+
+.panel-pestana.activo {
+  display: block;
+}
+
+.subseccion {
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.subseccion h3 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--texto-suave);
+  margin: 0 0 12px;
+}
+
+.fila-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.fila-check label {
+  font-weight: 400;
+}
+
+.separador-menu {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.35);
+  margin: 8px 6px;
+  list-style: none;
+}
+
+/* ---------- Listas de documentos (Cotización, Pedido, Factura, Orden de
+   Compra, Compra): columnas de Nro documento, código, nombre, fechas,
+   montos, estado y acciones. Usan todo el ancho de la pantalla y, si no
+   cabe, se desplazan de lado en vez de encimarse. ---------- */
+body.pantalla-ancha .contenido { max-width: none; min-width: 0; }
+
+.lista-documentos { overflow-x: auto; }
+.lista-documentos .fila-articulo { gap: 8px; min-width: 1092px; }
+.lista-documentos .codigo-fila { width: 92px; }
+.lista-documentos .col-codigo { width: 84px; }
+.lista-documentos .fila-articulo .nombre-fila { min-width: 120px; overflow-wrap: anywhere; }
+.lista-documentos .col-fecha { width: 80px; }
+.lista-documentos .col-num { width: 88px; }
+.lista-documentos .col-estado { width: 78px; flex-shrink: 0; }
+.lista-documentos .col-acciones,
+.lista-documentos .celda-acciones { width: 200px; max-width: 200px !important; flex-shrink: 0; }
+
+/* Cursor de espera mientras el sistema trabaja (ver navegacion.js). */
+html.procesando,
+html.procesando * { cursor: wait !important; }
+
+/* ---------- Encabezados de columnas de las listas: mismo tipo de letra,
+   tamaño y altura en todos los títulos (antes "Nro documento" y "Nombre"
+   salían más grandes que el resto). ---------- */
+.fila-articulo.fila-encabezado .codigo-fila,
+.fila-articulo.fila-encabezado .nombre-fila,
+.fila-articulo.fila-encabezado .col-etiqueta,
+.fila-articulo.fila-encabezado .col-codigo,
+.fila-articulo.fila-encabezado .col-fecha,
+.fila-articulo.fila-encabezado .col-num,
+.fila-articulo.fila-encabezado .col-estado,
+.fila-articulo.fila-encabezado .col-acciones {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 34px;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #cbd3e3;
+}
+
+.fila-articulo.fila-encabezado .col-num {
+  justify-content: flex-end;
+  text-align: right;
+}

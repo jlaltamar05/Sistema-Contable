@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuración Contable — Sistema Administrativo</title>
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body class="pantalla-ancha" data-modulo="configuracion-contable">
+  <div class="app-shell">
+    <nav class="barra-lateral" id="barra-lateral"></nav>
+
+    <main class="contenido">
+      <div class="encabezado-pagina">
+        <div>
+          <h1>Configuración Contable</h1>
+          <p>Modo de contabilización y cuentas por defecto de esta compañía — se usan cuando un cliente, proveedor, artículo o cuenta bancaria no tiene su propia cuenta contable asignada.</p>
+        </div>
+      </div>
+
+      <div id="caja-mensaje" class="mensaje"></div>
+
+      <section class="panel">
+        <h2>Modo de contabilización</h2>
+        <div class="formulario-grid">
+          <div class="campo campo-ancho">
+            <label for="config-modo">¿Cómo pasan los asientos de Pendiente a Contabilizado?</label>
+            <select id="config-modo">
+              <option value="automatico">Automático — el asiento nace ya Contabilizado</option>
+              <option value="manual">Manual — queda Pendiente hasta que alguien lo contabilice uno por uno</option>
+              <option value="proceso">Por proceso — se corre un proceso en lote sobre un rango de fechas</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Cuentas por defecto</h2>
+        <div class="formulario-grid" id="contenedor-cuentas-defecto"></div>
+      </section>
+
+      <div class="acciones-formulario">
+        <button type="button" class="boton boton-primario" id="boton-guardar-config">Guardar configuración</button>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/utilidades.js"></script>
+  <script src="js/navegacion.js"></script>
+  <script src="js/configuracion-contable.js"></script>
+</body>
+</html>
