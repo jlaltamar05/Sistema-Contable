@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ejercicios Contables — Sistema Contable</title>
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body class="pantalla-ancha" data-modulo="ejercicios-contables">
+  <div class="app-shell">
+    <nav class="barra-lateral" id="barra-lateral"></nav>
+
+    <main class="contenido">
+      <div class="encabezado-pagina">
+        <div>
+          <h1>Ejercicios Contables</h1>
+          <p>El año fiscal completo. Al abrir uno nuevo, si el año anterior ya está cerrado, se generan solo sus saldos iniciales. Al cerrar uno, las cuentas de Ingreso/Gasto/Costo se dejan en cero y la utilidad o pérdida neta pasa a la cuenta de Patrimonio configurada.</p>
+        </div>
+      </div>
+
+      <div id="caja-mensaje" class="mensaje"></div>
+
+      <section class="panel">
+        <h2>Abrir un ejercicio nuevo</h2>
+        <div class="formulario-grid">
+          <div class="campo">
+            <label for="ejercicio-anio">Año</label>
+            <input type="number" id="ejercicio-anio" min="2000" max="2100" />
+          </div>
+          <div class="campo">
+            <label for="ejercicio-inicio">Fecha de inicio</label>
+            <input type="date" id="ejercicio-inicio" />
+          </div>
+          <div class="campo">
+            <label for="ejercicio-fin">Fecha de fin</label>
+            <input type="date" id="ejercicio-fin" />
+          </div>
+          <div class="campo" style="justify-content: flex-end;">
+            <button type="button" class="boton boton-primario" id="boton-abrir-ejercicio">Abrir ejercicio</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Ejercicios</h2>
+        <table>
+          <thead><tr><th>Año</th><th>Inicio</th><th>Fin</th><th>Estado</th><th>Cerrado</th><th></th></tr></thead>
+          <tbody id="tabla-ejercicios"></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/utilidades.js"></script>
+  <script src="js/navegacion.js"></script>
+  <script src="js/ejercicios-contables.js"></script>
+</body>
+</html>

@@ -124,3 +124,82 @@ async function eliminarCuenta(cuenta) {
 }
 
 cargarCuentas();
+
+// ---------- Exportar a CSV ----------
+
+function celdaCSV(texto) {
+  return '"' + String(texto === null || texto === undefined ? '' : texto).replace(/"/g, '""') + '"';
+}
+
+document.getElementById('boton-exportar-cuentas').addEventListener('click', () => {
+  const encabezado = ['codigo', 'nombre', 'tipo', 'cuenta_padre_codigo', 'acepta_movimiento', 'activa'];
+  const lineas = [encabezado.join(';')];
+
+  cuentas.forEach((c) => {
+    lineas.push([
+      celdaCSV(c.codigo),
+      celdaCSV(c.nombre),
+      celdaCSV(c.tipo),
+      celdaCSV(c.cuenta_padre ? c.cuenta_padre.codigo : ''),
+      celdaCSV(c.acepta_movimiento),
+      celdaCSV(c.activa),
+    ].join(';'));
+  });
+
+  const blob = new Blob(['\uFEFF' + lineas.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const enlace = document.createElement('a');
+  enlace.href = URL.createObjectURL(blob);
+  enlace.download = 'plan_de_cuentas.csv';
+  document.body.appendChild(enlace);
+  enlace.click();
+  document.body.removeChild(enlace);
+  URL.revokeObjectURL(enlace.href);
+});
+
+// ---------- Importar desde CSV ----------
+// Formato esperado (mismo que exporta el botón de arriba):
+// codigo;nombre;tipo;cuenta_padre_codigo;acepta_movimiento;activa
+
+document.getElementById('boton-importar-cuentas').addEventListener('click', () => {
+  document.getElementById('input-importar-cuentas').click();
+});
+
+document.getElementById('input-importar-cuentas').addEventListener('change', async (evento) => {
+  const archivo = evento.target.files[0];
+  if (!archivo) return;
+
+  try {
+    const texto = await archivo.text();
+    const lineas = texto.split(/\r?\n/).filter((l) => l.trim() !== '');
+    if (lineas.length < 2) {
+      mostrarMensaje('El archivo no tiene filas para importar.', 'error');
+      return;
+    }
+
+    const filas = lineas.slice(1).map((linea) => {
+      // separador ; y celdas entre comillas dobles (mismo formato que se exporta)
+      const partes = linea.split(';').map((c) => c.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+      return {
+        codigo: partes[0],
+        nombre: partes[1],
+        tipo: partes[2],
+        cuenta_padre_codigo: partes[3],
+        acepta_movimiento: partes[4],
+        activa: partes[5],
+      };
+    });
+
+    const resultado = await llamarApi('/cuentas-contables/importar', { method: 'POST', body: JSON.stringify({ filas }) });
+
+    let mensaje = resultado.creadas + ' cuenta(s) creada(s), ' + resultado.actualizadas + ' actualizada(s).';
+    if (resultado.errores.length > 0) mensaje += ' ' + resultado.errores.length + ' fila(s) con problemas (revisa la consola).';
+    mostrarMensaje(mensaje, resultado.errores.length > 0 ? 'error' : 'exito');
+    if (resultado.errores.length > 0) console.warn('Errores al importar el Plan de Cuentas:', resultado.errores);
+
+    await cargarCuentas();
+  } catch (err) {
+    mostrarMensaje(err.message, 'error');
+  } finally {
+    evento.target.value = '';
+  }
+});

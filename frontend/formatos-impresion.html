@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Formatos de impresión · Sistema Contable</title>
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body data-modulo="formatos-impresion">
+  <div class="app-shell">
+    <nav class="barra-lateral" id="barra-lateral"></nav>
+
+    <main class="contenido">
+      <div class="encabezado-pagina">
+        <div>
+          <h1>Formatos de impresión</h1>
+          <p>Plantillas de impresión por tipo de reporte contable. Una de cada tipo se marca como predeterminada.</p>
+        </div>
+        <button type="button" class="boton boton-primario" id="boton-nuevo-formato">+ Nuevo formato</button>
+      </div>
+
+      <div id="caja-mensaje" class="mensaje"></div>
+
+      <section class="panel">
+        <h2>Formatos registrados</h2>
+        <div class="fila-articulo fila-encabezado">
+          <div class="col-etiqueta">Reporte</div>
+          <div class="nombre-fila">Nombre del formato</div>
+          <div class="col-etiqueta">Cola sugerida</div>
+          <div class="col-etiqueta">Predeterminado</div>
+          <div class="col-etiqueta">Activo</div>
+          <div class="col-acciones">Acciones</div>
+        </div>
+        <div id="grid-formatos" class="grid-articulos"></div>
+        <p id="conteo-formatos" style="color: var(--texto-suave); font-size: 13px; margin-top: 10px; text-align: right;"></p>
+      </section>
+    </main>
+  </div>
+
+  <div id="modal-formato" style="display: none; position: fixed; inset: 0; background: rgba(22,35,61,0.6); z-index: 900; overflow-y: auto; padding: 32px 16px;">
+    <div style="background: var(--papel-panel); border-radius: var(--radio); max-width: 720px; margin: 0 auto; padding: 24px; position: relative;">
+      <button type="button" id="boton-cerrar-modal-formato"
+        style="position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 22px; cursor: pointer; color: var(--texto-suave);">✕</button>
+
+      <h2 id="titulo-formulario">Nuevo formato</h2>
+      <form id="form-formato">
+        <input type="hidden" id="formato-id" />
+        <div class="formulario-grid">
+          <div class="campo">
+            <label for="formato-tipo">Tipo de reporte</label>
+            <select id="formato-tipo" required>
+              <option value="libro_diario">Libro Diario</option>
+              <option value="libro_mayor">Libro Mayor</option>
+              <option value="balance_comprobacion">Balance de Comprobación</option>
+              <option value="estado_resultados">Pérdidas y Ganancias</option>
+              <option value="balance_general">Balance General</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="formato-nombre">Nombre del formato</label>
+            <input type="text" id="formato-nombre" placeholder="Ej. Formato clásico" required />
+          </div>
+          <div class="campo">
+            <label for="formato-cola">Cola / impresora sugerida</label>
+            <input type="text" id="formato-cola" placeholder="Ej. Impresora Contabilidad" />
+          </div>
+          <div class="campo" style="justify-content: flex-end; flex-direction: row; align-items: center; gap: 8px;">
+            <input type="checkbox" id="formato-predeterminado" style="width: auto;" />
+            <label for="formato-predeterminado" style="font-weight: 400;">Predeterminado para este tipo de reporte</label>
+          </div>
+          <div class="campo" style="justify-content: flex-end; flex-direction: row; align-items: center; gap: 8px;">
+            <input type="checkbox" id="formato-activo" style="width: auto;" checked />
+            <label for="formato-activo" style="font-weight: 400;">Activo</label>
+          </div>
+          <div class="campo" style="grid-column: 1 / -1;">
+            <label for="formato-contenido">Contenido de la plantilla (HTML)</label>
+            <textarea id="formato-contenido" rows="10" style="font-family: ui-monospace, monospace; font-size: 12px;" placeholder="Usa {{titulo_documento}}, {{numero_documento}}, {{fecha_documento}}, y {{#each filas}}...{{/each}} para las filas."></textarea>
+          </div>
+        </div>
+        <div class="acciones-formulario">
+          <button type="submit" class="boton boton-primario" id="boton-guardar">Guardar</button>
+          <button type="button" class="boton boton-secundario" id="boton-cancelar">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/utilidades.js"></script>
+  <script src="js/navegacion.js"></script>
+  <script src="js/formatos-impresion.js"></script>
+</body>
+</html>

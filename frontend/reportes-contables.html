@@ -14,7 +14,10 @@
       <div class="encabezado-pagina">
         <div>
           <h1>Reportes Contables</h1>
-          <p>Libro Diario y Balance de Comprobación. Todos los reportes se pueden filtrar por estatus del asiento.</p>
+          <p>Libro Diario, Balance de Comprobación, Estado de Resultados y Balance General. Todos se pueden filtrar por estatus del asiento.</p>
+        </div>
+        <div>
+          <a href="informe-constructor.html" class="boton boton-primario">🎨 Constructor de Informes</a>
         </div>
       </div>
 
@@ -26,7 +29,10 @@
             <label for="reporte-tipo">Reporte</label>
             <select id="reporte-tipo">
               <option value="libro-diario">Libro Diario</option>
+              <option value="libro-mayor">Libro Mayor</option>
               <option value="balance-comprobacion">Balance de Comprobación</option>
+              <option value="estado-resultados">Pérdidas y Ganancias</option>
+              <option value="balance-general">Balance General (a una fecha de corte)</option>
             </select>
           </div>
           <div class="campo"><label for="reporte-desde">Desde</label><input type="date" id="reporte-desde" /></div>
@@ -46,15 +52,38 @@
       </section>
 
       <section class="panel" id="panel-resultado" style="display: none;">
-        <h2 id="resultado-titulo"></h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 10px;">
+          <h2 id="resultado-titulo" style="margin:0;"></h2>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="boton boton-secundario" id="boton-imprimir-reporte">🖨️ Imprimir</button>
+            <button type="button" class="boton boton-secundario" id="boton-csv-reporte">Exportar a Excel (CSV)</button>
+          </div>
+        </div>
         <div style="overflow-x: auto;"><table id="tabla-reporte"></table></div>
       </section>
     </main>
   </div>
 
+  <div id="modal-imprimir" style="display: none; position: fixed; inset: 0; background: rgba(22,35,61,0.6); z-index: 940; overflow-y: auto; padding: 32px 16px; align-items: flex-start; justify-content: center;">
+    <div style="background: var(--papel-panel); border-radius: var(--radio); max-width: 420px; width: 100%; margin: 0 auto; padding: 24px; position: relative;">
+      <button type="button" id="boton-cerrar-modal-imprimir"
+        style="position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 22px; cursor: pointer; color: var(--texto-suave);">✕</button>
+      <h2>Imprimir</h2>
+      <div class="campo">
+        <label for="select-formato-imprimir">Formato</label>
+        <select id="select-formato-imprimir"></select>
+      </div>
+      <div class="acciones-formulario">
+        <button type="button" class="boton boton-primario" id="boton-confirmar-imprimir">Imprimir</button>
+        <button type="button" class="boton boton-secundario" id="boton-cancelar-imprimir">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
   <script src="js/config.js"></script>
   <script src="js/utilidades.js"></script>
   <script src="js/navegacion.js"></script>
+  <script src="js/plantillas-impresion.js"></script>
   <script src="js/reportes-contables.js"></script>
 </body>
 </html>

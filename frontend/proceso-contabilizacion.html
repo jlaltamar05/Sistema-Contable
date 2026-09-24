@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proceso de Contabilización — Sistema Contable</title>
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body class="pantalla-ancha" data-modulo="proceso-contabilizacion">
+  <div class="app-shell">
+    <nav class="barra-lateral" id="barra-lateral"></nav>
+
+    <main class="contenido">
+      <div class="encabezado-pagina">
+        <div>
+          <h1>Proceso de Contabilización</h1>
+          <p>Pasa en lote todos los asientos "Pendiente" de un rango de fechas a "Contabilizado" (o el reverso). No es un asiento en sí — es el proceso que los oficializa.</p>
+        </div>
+      </div>
+
+      <div id="caja-mensaje" class="mensaje"></div>
+
+      <section class="panel">
+        <div class="formulario-grid">
+          <div class="campo"><label for="proceso-desde">Desde</label><input type="date" id="proceso-desde" /></div>
+          <div class="campo"><label for="proceso-hasta">Hasta</label><input type="date" id="proceso-hasta" /></div>
+          <div class="campo" style="justify-content: flex-end;">
+            <button type="button" class="boton boton-primario" id="boton-proceso-contabilizar">Contabilizar pendientes</button>
+          </div>
+          <div class="campo" style="justify-content: flex-end;">
+            <button type="button" class="boton boton-secundario" id="boton-proceso-desprocesar">Desprocesar contabilizados</button>
+          </div>
+        </div>
+        <p id="proceso-estatus" style="color: var(--texto-suave); font-size: 13px;"></p>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/utilidades.js"></script>
+  <script src="js/navegacion.js"></script>
+  <script src="js/proceso-contabilizacion.js"></script>
+</body>
+</html>

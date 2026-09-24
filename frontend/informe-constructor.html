@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Constructor de Informes — Sistema Contable</title>
+  <link rel="stylesheet" href="css/estilos.css" />
+  <style>
+    .lista-guardados { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
+    .fila-guardado { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--linea); border-radius: var(--radio); padding: 10px 12px; flex-wrap: wrap; }
+    .fila-guardado .nombre { font-weight: 600; }
+    .fila-guardado .fuente { color: var(--texto-suave); font-size: 12px; margin-left: 8px; }
+    .fila-guardado .acciones { display: flex; gap: 6px; }
+    .columnas-disponibles { display: flex; flex-direction: column; gap: 6px; border: 1px solid var(--linea); border-radius: var(--radio); padding: 10px 12px; max-height: 260px; overflow-y: auto; }
+    .columnas-disponibles label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 400; }
+    .contenedor-tabla { overflow-x: auto; border: 1px solid var(--linea); border-radius: var(--radio); }
+    table.tabla-informe { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table.tabla-informe th { background: #1c2b4a; color: #fff; text-align: left; padding: 8px 10px; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; position: sticky; top: 0; }
+    table.tabla-informe td { padding: 7px 10px; border-bottom: 1px solid var(--linea); }
+    table.tabla-informe tr:nth-child(even) td { background: #faf9f6; }
+    table.tabla-informe .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  </style>
+</head>
+<body class="pantalla-ancha" data-modulo="reportes-contables">
+  <div class="app-shell">
+    <nav class="barra-lateral" id="barra-lateral"></nav>
+
+    <main class="contenido">
+      <div class="encabezado-pagina">
+        <div>
+          <h1>Constructor de Informes</h1>
+          <p>Arma tus propios informes eligiendo qué datos quieres ver, sin depender de los informes básicos ya predefinidos.</p>
+        </div>
+        <div>
+          <a href="reportes-contables.html" class="boton boton-secundario">← Volver a Reportes</a>
+        </div>
+      </div>
+
+      <div id="caja-mensaje" class="mensaje"></div>
+
+      <section class="panel">
+        <h2>Mis informes guardados</h2>
+        <div id="lista-guardados" class="lista-guardados"></div>
+        <button type="button" class="boton boton-primario" id="boton-nuevo" style="margin-top: 10px;">+ Nuevo informe personalizado</button>
+      </section>
+
+      <section class="panel" id="panel-editor" style="display: none;">
+        <h2 id="titulo-editor">Nuevo informe personalizado</h2>
+
+        <div class="formulario-grid">
+          <div class="campo">
+            <label for="editor-nombre">Nombre del informe *</label>
+            <input type="text" id="editor-nombre" autocomplete="off" placeholder="Ej. Clientes con crédito alto" />
+          </div>
+          <div class="campo">
+            <label for="editor-fuente">Fuente de datos *</label>
+            <select id="editor-fuente"></select>
+          </div>
+        </div>
+
+        <div class="campo" style="margin-top: 10px;">
+          <label>Columnas a mostrar *</label>
+          <div class="columnas-disponibles" id="editor-columnas"></div>
+        </div>
+
+        <div class="formulario-grid" style="margin-top: 10px;">
+          <div class="campo">
+            <label for="editor-orden-por">Ordenar por</label>
+            <select id="editor-orden-por"><option value="">(sin orden particular)</option></select>
+          </div>
+          <div class="campo">
+            <label for="editor-orden-direccion">Dirección</label>
+            <select id="editor-orden-direccion">
+              <option value="asc">Ascendente</option>
+              <option value="desc">Descendente</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="rapidos" style="margin-top: 14px;">
+          <button type="button" class="boton boton-primario" id="boton-guardar-informe">Guardar informe</button>
+          <button type="button" class="boton boton-secundario" id="boton-cancelar-editor">Cancelar</button>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-resultado" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap;">
+          <div>
+            <h2 id="resultado-titulo" style="margin-bottom: 4px;"></h2>
+            <p id="resultado-subtitulo" style="color: var(--texto-suave); font-size: 13px; margin: 0;"></p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="boton boton-secundario" id="boton-imprimir">Imprimir</button>
+            <button type="button" class="boton boton-secundario" id="boton-csv">Exportar a Excel (CSV)</button>
+          </div>
+        </div>
+        <div class="contenedor-tabla"><table class="tabla-informe" id="tabla-informe"></table></div>
+        <p id="resultado-conteo" style="color: var(--texto-suave); font-size: 13px; margin-top: 10px; text-align: right;"></p>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/utilidades.js"></script>
+  <script src="js/navegacion.js"></script>
+  <script src="js/informe-constructor.js"></script>
+</body>
+</html>

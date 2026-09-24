@@ -25,6 +25,7 @@ async function obtener(req, res) {
     cuenta_costo_defecto_id: null,
     cuenta_ingreso_defecto_id: null,
     cuenta_banco_defecto_id: null,
+    cuenta_utilidad_ejercicio_id: null,
   });
 }
 
@@ -33,7 +34,7 @@ async function guardar(req, res) {
     modo_contabilizacion, cuenta_cxc_defecto_id, cuenta_cxp_defecto_id,
     cuenta_iva_ventas_defecto_id, cuenta_iva_compras_defecto_id,
     cuenta_inventario_defecto_id, cuenta_costo_defecto_id,
-    cuenta_ingreso_defecto_id, cuenta_banco_defecto_id,
+    cuenta_ingreso_defecto_id, cuenta_banco_defecto_id, cuenta_utilidad_ejercicio_id,
   } = req.body;
 
   if (!['automatico', 'manual', 'proceso'].includes(modo_contabilizacion)) {
@@ -53,6 +54,7 @@ async function guardar(req, res) {
       cuenta_costo_defecto_id: cuenta_costo_defecto_id || null,
       cuenta_ingreso_defecto_id: cuenta_ingreso_defecto_id || null,
       cuenta_banco_defecto_id: cuenta_banco_defecto_id || null,
+      cuenta_utilidad_ejercicio_id: cuenta_utilidad_ejercicio_id || null,
       updated_at: new Date().toISOString(),
     }], { onConflict: 'compania_id' })
     .select()

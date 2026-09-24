@@ -1,15 +1,41 @@
-// Dibuja la barra lateral de navegación del Sistema Contable.
-// Versión simplificada de la del Administrativo: sin categorías
-// anidadas, solo los módulos contables (todos los que pueden entrar
-// aquí ya tienen acceso a todos ellos — el login ya filtró por rol).
+// Barra lateral del Sistema Contable, organizada por categorías.
 
-const MODULOS_NAV = [
-  { id: 'plan-cuentas', nombre: 'Plan de Cuentas', href: 'plan-cuentas.html' },
-  { id: 'centros-costo', nombre: 'Centros de Costo', href: 'centros-costo.html' },
-  { id: 'asientos', nombre: 'Asientos Contables', href: 'asientos.html' },
-  { id: 'periodos-contables', nombre: 'Períodos Contables', href: 'periodos-contables.html' },
-  { id: 'reportes-contables', nombre: 'Reportes Contables', href: 'reportes-contables.html' },
-  { id: 'configuracion-contable', nombre: 'Configuración Contable', href: 'configuracion-contable.html' },
+const CATEGORIAS_NAV = [
+  {
+    nombre: 'Contabilidad',
+    modulos: [
+      { id: 'plan-cuentas', nombre: 'Plan de Cuentas', href: 'plan-cuentas.html' },
+      { id: 'centros-costo', nombre: 'Centros de Costo', href: 'centros-costo.html' },
+      { id: 'asientos', nombre: 'Asientos Contables', href: 'asientos.html' },
+      { id: 'proceso-contabilizacion', nombre: 'Proceso de Contabilización', href: 'proceso-contabilizacion.html' },
+      { id: 'periodos-contables', nombre: 'Períodos Contables', href: 'periodos-contables.html' },
+      { id: 'ejercicios-contables', nombre: 'Ejercicios Contables', href: 'ejercicios-contables.html' },
+    ],
+  },
+  {
+    nombre: 'Reportes',
+    modulos: [
+      { id: 'reportes-contables', nombre: 'Libro Diario', href: 'reportes-contables.html?tipo=libro-diario' },
+      { id: 'reportes-contables', nombre: 'Libro Mayor', href: 'reportes-contables.html?tipo=libro-mayor' },
+      { id: 'reportes-contables', nombre: 'Balance de Comprobación', href: 'reportes-contables.html?tipo=balance-comprobacion' },
+      { id: 'reportes-contables', nombre: 'Pérdidas y Ganancias', href: 'reportes-contables.html?tipo=estado-resultados' },
+      { id: 'reportes-contables', nombre: 'Balance General', href: 'reportes-contables.html?tipo=balance-general' },
+    ],
+  },
+  {
+    nombre: 'Configuración',
+    modulos: [
+      { id: 'configuracion-contable', nombre: 'Configuración Contable', href: 'configuracion-contable.html' },
+      { id: 'configuracion-impresion', nombre: 'Configuración de Impresión', href: 'configuracion-impresion.html' },
+      { id: 'formatos-impresion', nombre: 'Formatos de Impresión', href: 'formatos-impresion.html' },
+    ],
+  },
+  {
+    nombre: 'Acerca',
+    modulos: [
+      { id: 'acerca', nombre: 'Acerca de', href: 'acerca.html' },
+    ],
+  },
 ];
 
 async function dibujarBarraLateral() {
@@ -22,9 +48,27 @@ async function dibujarBarraLateral() {
   const esAdministrador = usuarioActual && usuarioActual.rol === 'administrador';
   const moduloActivo = document.body.dataset.modulo;
 
-  const itemsHtml = MODULOS_NAV.map((m) => (
-    '<li><a href="' + m.href + '" class="' + (m.id === moduloActivo ? 'activo' : '') + '">' + m.nombre + '</a></li>'
-  )).join('');
+  function renderizarItems(modulos) {
+    return modulos.map((m) => {
+      const claseActivo = m.id === moduloActivo ? 'activo' : '';
+      return '<li><a href="' + m.href + '" class="' + claseActivo + '">' + m.nombre + '</a></li>';
+    }).join('');
+  }
+
+  function tieneModuloActivo(modulos) {
+    return modulos.some((m) => m.id === moduloActivo);
+  }
+
+  const categoriasHtml =
+    '<ul class="menu-raiz">' +
+    CATEGORIAS_NAV.map((categoria) => {
+      const tieneActivo = tieneModuloActivo(categoria.modulos);
+      return '<li class="tiene-submenu categoria-raiz ' + (tieneActivo ? 'activo' : '') + '">' +
+        '<span class="disparador-categoria">' + categoria.nombre + '</span>' +
+        '<ul class="submenu-flotante">' + renderizarItems(categoria.modulos) + '</ul>' +
+        '</li>';
+    }).join('') +
+    '</ul>';
 
   const bloqueCompania = esAdministrador
     ? '<div style="margin-bottom: 14px;">' +
@@ -44,7 +88,7 @@ async function dibujarBarraLateral() {
     '<img id="logo-compania" alt="Logo de la compañía" style="display: none; max-width: 100%; max-height: 42px; margin-bottom: 6px; border-radius: 4px;" />' +
     'Sistema Contable<span>Independiente del Sistema Administrativo</span></div>' +
     bloqueUsuario + bloqueCompania +
-    '<ul class="menu-raiz">' + itemsHtml + '</ul>' +
+    categoriasHtml +
     '<div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--azul-noche-suave);">' +
     '<button type="button" id="boton-cerrar-sesion" class="boton boton-secundario" style="width: 100%;">Cerrar sesión</button></div>';
 

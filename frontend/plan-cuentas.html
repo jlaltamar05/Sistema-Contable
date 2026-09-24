@@ -16,6 +16,11 @@
           <h1>Plan de Cuentas</h1>
           <p>El catálogo de cuentas contables de esta compañía. Las cuentas "título" (sin marcar "Acepta movimiento") solo agrupan; los asientos siempre van contra una cuenta de detalle.</p>
         </div>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="boton boton-secundario" id="boton-exportar-cuentas">Exportar (CSV)</button>
+          <button type="button" class="boton boton-secundario" id="boton-importar-cuentas">Importar (CSV)</button>
+          <input type="file" id="input-importar-cuentas" accept=".csv" style="display:none;" />
+        </div>
       </div>
 
       <div id="caja-mensaje" class="mensaje"></div>

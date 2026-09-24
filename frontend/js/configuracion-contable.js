@@ -12,6 +12,7 @@ const CUENTAS_DEFECTO = [
   { clave: 'cuenta_costo_defecto_id', etiqueta: 'Costo de Venta por defecto' },
   { clave: 'cuenta_ingreso_defecto_id', etiqueta: 'Ingreso por Venta por defecto' },
   { clave: 'cuenta_banco_defecto_id', etiqueta: 'Banco / Caja por defecto' },
+  { clave: 'cuenta_utilidad_ejercicio_id', etiqueta: 'Utilidad del ejercicio (Patrimonio) — usada al cerrar el año' },
 ];
 
 let cuentasDisponibles = [];
