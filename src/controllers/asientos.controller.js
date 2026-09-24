@@ -48,12 +48,13 @@ async function obtener(req, res) {
 }
 
 async function crearManual(req, res) {
-  const { fecha, descripcion, lineas } = req.body;
+  const { fecha, descripcion, lineas, tipo_documento } = req.body;
   if (!fecha) return res.status(400).json({ error: 'La fecha es obligatoria.' });
 
   try {
     const asiento = await motor.crearAsiento(req.companiaId, {
       fecha, descripcion, lineas, creadoPor: req.usuario.usuario_id,
+      documentoOrigenTipo: tipo_documento || 'manual',
     });
     res.status(201).json(asiento);
   } catch (err) {

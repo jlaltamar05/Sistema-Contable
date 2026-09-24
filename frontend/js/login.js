@@ -35,7 +35,7 @@ document.getElementById('form-login').addEventListener('submit', async (evento) 
       }
     }
 
-    window.location.href = 'plan-cuentas.html';
+    window.location.href = 'inicio.html';
   } catch (err) {
     mostrarMensaje('No se pudo conectar con el servidor. ¿Está corriendo "npm run dev"?', 'error');
   }

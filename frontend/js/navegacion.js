@@ -88,6 +88,7 @@ async function dibujarBarraLateral() {
     '<img id="logo-compania" alt="Logo de la compañía" style="display: none; max-width: 100%; max-height: 42px; margin-bottom: 6px; border-radius: 4px;" />' +
     'Sistema Contable<span>Independiente del Sistema Administrativo</span></div>' +
     bloqueUsuario + bloqueCompania +
+    '<ul class="menu-raiz"><li><a href="inicio.html" class="' + (moduloActivo === 'inicio' ? 'activo' : '') + '">🏠 Inicio</a></li></ul>' +
     categoriasHtml +
     '<div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--azul-noche-suave);">' +
     '<button type="button" id="boton-cerrar-sesion" class="boton boton-secundario" style="width: 100%;">Cerrar sesión</button></div>';

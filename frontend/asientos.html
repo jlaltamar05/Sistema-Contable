@@ -6,7 +6,6 @@
   <title>Asientos Contables — Sistema Administrativo</title>
   <link rel="stylesheet" href="css/estilos.css" />
   <style>
-    .fila-linea-asiento { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 8px; margin-bottom: 8px; align-items: center; }
     .fila-totales-asiento { display: flex; gap: 24px; margin-top: 10px; font-size: 13px; }
     .fila-totales-asiento b { margin-right: 4px; }
     .desbalanceado { color: #b42318; font-weight: 700; }
@@ -66,12 +65,25 @@
       <form id="form-asiento">
         <div class="formulario-grid">
           <div class="campo"><label for="asiento-fecha">Fecha *</label><input type="date" id="asiento-fecha" required /></div>
+          <div class="campo">
+            <label for="asiento-tipo-documento">Tipo de documento</label>
+            <select id="asiento-tipo-documento">
+              <option value="manual">Manual / Otro</option>
+              <option value="ajuste">Ajuste contable</option>
+              <option value="depreciacion">Depreciación</option>
+              <option value="nomina">Nómina</option>
+              <option value="provision">Provisión</option>
+            </select>
+          </div>
           <div class="campo campo-ancho"><label for="asiento-descripcion">Descripción</label><input type="text" id="asiento-descripcion" autocomplete="off" /></div>
         </div>
 
         <h3 style="font-size: 14px; margin: 16px 0 8px;">Líneas</h3>
-        <div id="lineas-asiento"></div>
-        <button type="button" class="boton boton-secundario" id="boton-agregar-linea">+ Agregar línea</button>
+        <table>
+          <thead><tr><th>Cuenta</th><th style="width:130px;">Débito</th><th style="width:130px;">Crédito</th><th style="width:40px;"></th></tr></thead>
+          <tbody id="lineas-asiento"></tbody>
+        </table>
+        <button type="button" class="boton boton-secundario" id="boton-agregar-linea" style="margin-top:8px;">+ Agregar línea</button>
 
         <div class="fila-totales-asiento">
           <span><b>Total débito:</b> <span id="total-debito">0.00</span></span>

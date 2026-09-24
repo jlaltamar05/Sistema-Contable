@@ -7,6 +7,12 @@ let asientos = [];
 let cuentasDisponibles = [];
 let contadorLinea = 0;
 
+const ETIQUETAS_ORIGEN = {
+  manual: 'Manual', ajuste: 'Ajuste contable', depreciacion: 'Depreciación',
+  nomina: 'Nómina', provision: 'Provisión',
+  apertura_ejercicio: 'Apertura de ejercicio', cierre_ejercicio: 'Cierre de ejercicio',
+};
+
 async function cargarCuentas() {
   try {
     cuentasDisponibles = (await llamarApi('/cuentas-contables')).filter((c) => c.acepta_movimiento && c.activa);
@@ -48,7 +54,7 @@ function dibujarTabla() {
     '<td>' + escaparHtml(a.numero_asiento) + '</td>' +
     '<td>' + formatearFecha(a.fecha) + '</td>' +
     '<td>' + escaparHtml(a.descripcion || '') + '</td>' +
-    '<td>' + escaparHtml(a.documento_origen_tipo || 'Manual') + '</td>' +
+    '<td>' + escaparHtml(ETIQUETAS_ORIGEN[a.documento_origen_tipo] || a.documento_origen_tipo || 'Manual') + '</td>' +
     '<td><span class="etiqueta-estado ' + (a.estado === 'contabilizado' ? 'activo' : 'pendiente') + '">' + (a.estado === 'contabilizado' ? 'Contabilizado' : 'Pendiente') + '</span></td>' +
     '<td class="celda-acciones">' +
     '<button type="button" class="boton boton-secundario" data-accion="ver" data-id="' + a.id + '">Ver</button> ' +
@@ -136,18 +142,17 @@ function agregarLinea() {
   const idLinea = 'linea-' + contadorLinea;
   const opciones = cuentasDisponibles.map((c) => '<option value="' + c.id + '">' + escaparHtml(c.codigo + ' — ' + c.nombre) + '</option>').join('');
 
-  const div = document.createElement('div');
-  div.className = 'fila-linea-asiento';
-  div.id = idLinea;
-  div.innerHTML =
-    '<select class="linea-cuenta">' + opciones + '</select>' +
-    '<input type="number" class="linea-debito" placeholder="Débito" step="0.01" min="0" value="0" />' +
-    '<input type="number" class="linea-credito" placeholder="Crédito" step="0.01" min="0" value="0" />' +
-    '<button type="button" class="boton boton-peligro" data-quitar="' + idLinea + '">✕</button>';
+  const fila = document.createElement('tr');
+  fila.id = idLinea;
+  fila.innerHTML =
+    '<td><select class="linea-cuenta" style="width:100%;">' + opciones + '</select></td>' +
+    '<td><input type="number" class="linea-debito" step="0.01" min="0" value="0" style="width:100%;" /></td>' +
+    '<td><input type="number" class="linea-credito" step="0.01" min="0" value="0" style="width:100%;" /></td>' +
+    '<td><button type="button" class="boton boton-peligro" data-quitar="' + idLinea + '">✕</button></td>';
 
-  document.getElementById('lineas-asiento').appendChild(div);
-  div.querySelector('.linea-debito').addEventListener('input', actualizarTotales);
-  div.querySelector('.linea-credito').addEventListener('input', actualizarTotales);
+  document.getElementById('lineas-asiento').appendChild(fila);
+  fila.querySelector('.linea-debito').addEventListener('input', actualizarTotales);
+  fila.querySelector('.linea-credito').addEventListener('input', actualizarTotales);
 }
 document.getElementById('boton-agregar-linea').addEventListener('click', agregarLinea);
 
@@ -179,15 +184,16 @@ function actualizarTotales() {
 document.getElementById('form-asiento').addEventListener('submit', async (evento) => {
   evento.preventDefault();
 
-  const lineas = [...document.querySelectorAll('#lineas-asiento .fila-linea-asiento')].map((div) => ({
-    cuenta_contable_id: div.querySelector('.linea-cuenta').value,
-    debito: Number(div.querySelector('.linea-debito').value) || 0,
-    credito: Number(div.querySelector('.linea-credito').value) || 0,
+  const lineas = [...document.querySelectorAll('#lineas-asiento tr')].map((fila) => ({
+    cuenta_contable_id: fila.querySelector('.linea-cuenta').value,
+    debito: Number(fila.querySelector('.linea-debito').value) || 0,
+    credito: Number(fila.querySelector('.linea-credito').value) || 0,
   })).filter((l) => l.debito > 0 || l.credito > 0);
 
   const cuerpo = {
     fecha: document.getElementById('asiento-fecha').value,
     descripcion: document.getElementById('asiento-descripcion').value.trim(),
+    tipo_documento: document.getElementById('asiento-tipo-documento').value,
     lineas,
   };
 
