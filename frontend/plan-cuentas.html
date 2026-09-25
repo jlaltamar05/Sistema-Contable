@@ -23,6 +23,23 @@
         </div>
       </div>
 
+      <details style="background: var(--papel-panel); border: 1px solid var(--linea); border-radius: var(--radio); padding: 10px 14px; margin-bottom: 16px; font-size: 13px;">
+        <summary style="cursor: pointer; font-weight: 600;">Formato del archivo CSV (Importar/Exportar)</summary>
+        <p style="margin: 8px 0 4px;">Columnas, en este orden, separadas por punto y coma (<code>;</code>):</p>
+        <table style="width:100%; font-size:12.5px;">
+          <thead><tr><th>Columna</th><th>Qué va ahí</th></tr></thead>
+          <tbody>
+            <tr><td><code>codigo</code></td><td>Código de la cuenta (ej. 1101)</td></tr>
+            <tr><td><code>nombre</code></td><td>Nombre de la cuenta</td></tr>
+            <tr><td><code>tipo</code></td><td>activo, pasivo, patrimonio, ingreso, gasto o costo</td></tr>
+            <tr><td><code>cuenta_padre_codigo</code></td><td>Código de otra cuenta de este mismo archivo (o ya existente) si cuelga de una "título" — vacío si no tiene</td></tr>
+            <tr><td><code>acepta_movimiento</code></td><td>true o false</td></tr>
+            <tr><td><code>activa</code></td><td>true o false</td></tr>
+          </tbody>
+        </table>
+        <p style="margin: 8px 0 0; color: var(--texto-suave);">Más fácil: dale "Exportar" primero para ver el formato con tus propias cuentas, edítalo, y vuelve a subirlo con "Importar".</p>
+      </details>
+
       <div id="caja-mensaje" class="mensaje"></div>
 
       <section class="panel">

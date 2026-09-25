@@ -40,3 +40,8 @@ document.getElementById('form-login').addEventListener('submit', async (evento) 
     mostrarMensaje('No se pudo conectar con el servidor. ¿Está corriendo "npm run dev"?', 'error');
   }
 });
+
+document.getElementById('boton-ver-login-password').addEventListener('click', () => {
+  const campo = document.getElementById('login-password');
+  campo.type = campo.type === 'password' ? 'text' : 'password';
+});

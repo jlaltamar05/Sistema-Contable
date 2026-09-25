@@ -1,0 +1,544 @@
+/* Estilos para la pantalla de captura densa (tipo hoja de cálculo /
+   software de escritorio clásico), usada en Pedidos, Cotización,
+   Contratos, Compras y Orden de Compra. */
+
+.modal-hoja-captura {
+  position: fixed;
+  inset: 0;
+  background: rgba(22, 35, 61, 0.65);
+  z-index: 900;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 24px 16px;
+}
+
+.hoja-captura {
+  background: #f4f6fa;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 1180px;
+  padding: 20px 24px;
+  position: relative;
+  box-shadow: var(--sombra);
+  font-size: 13px;
+}
+
+.boton-cerrar-hoja {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--texto-suave);
+  z-index: 2;
+}
+
+.hoja-captura label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: #5b6b8c;
+  font-weight: 600;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.hoja-captura input,
+.hoja-captura select,
+.hoja-captura textarea {
+  font-size: 13px;
+  padding: 5px 7px;
+  border: 1px solid #c3cbdb;
+  border-radius: 4px;
+  background: white;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Altura uniforme para todos los campos de una sola línea (inputs y
+   selects) y para las etiquetas encima — así todo el renglón queda a
+   la misma altura, sin importar el tipo de control. Los textarea
+   quedan afuera a propósito (son multilínea). */
+.hoja-captura input:not([type="hidden"]),
+.hoja-captura select {
+  height: 30px;
+}
+
+/* Campos numéricos (moneda, tasa de cambio, cantidades, porcentajes):
+   alineados a la derecha, como es convención para números. */
+.hoja-captura input[type="number"] {
+  text-align: right;
+}
+
+.hoja-captura label {
+  height: 15px; /* misma altura de título en todos los campos */
+}
+
+.hoja-captura input:disabled {
+  background: #e9edf5;
+  color: #77839e;
+}
+
+.grupo-campo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.grupo-campo.estrecho { flex: 0 0 78px; }
+.grupo-campo.ancho-doble { flex: 0 0 190px; }
+.grupo-campo.ancho-triple { flex: 0 0 280px; }
+.grupo-campo.ancho-completo { flex: 1 1 100%; }
+.grupo-campo.ancho-reducido { flex: 0 0 120px; }
+
+/* Cotización Nro.: el campo de texto mide lo mismo que Pedido Nro.
+   (120px) — el botón de importar se suma aparte, sin robarle ancho. */
+.grupo-campo.ancho-cotizacion { flex: 0 0 156px; }
+.grupo-campo.ancho-cotizacion input {
+  width: 120px;
+}
+.grupo-campo.ancho-cotizacion button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.separador-vertical {
+  width: 1px;
+  background: #c3cbdb;
+  align-self: stretch;
+  margin: 0 4px;
+}
+
+.franja-superior,
+.franja-cliente,
+.fila-captura-rapida {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-end;
+  background: white;
+  border: 1px solid #dde3ef;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+/* Cliente tiene debajo un mensaje de crédito que Vendedor y Tipo de
+   pedido no tienen; alinear por abajo los descuadraba. Se alinean
+   por arriba (a la altura de las etiquetas/campos), sin importar
+   cuánto ocupe ese mensaje. */
+.franja-cliente {
+  align-items: flex-start;
+}
+
+.fila-captura-rapida {
+  background: #eef2fb;
+}
+
+.tabla-lineas-envoltorio {
+  border: 1px solid #dde3ef;
+  border-radius: 6px;
+  overflow: auto;
+  max-height: 220px;
+  background: white;
+  margin-bottom: 4px;
+}
+
+.tabla-lineas {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.tabla-lineas thead th {
+  position: sticky;
+  top: 0;
+  background: var(--azul-noche);
+  color: white;
+  text-align: left;
+  padding: 6px 8px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tabla-lineas th.col-num,
+.tabla-lineas td.col-num {
+  text-align: right;
+}
+
+.tabla-lineas td.col-nombre-producto {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 0; /* fuerza el truncado dentro del ancho de la columna */
+  color: var(--azul-noche, #1c2b4a);
+}
+
+.tabla-lineas td.col-almacen {
+  color: #77839e;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+}
+
+.tabla-lineas td.col-item {
+  color: #9fabc4;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabla-lineas tbody td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #eef1f7;
+  white-space: nowrap;
+}
+
+.tabla-lineas tbody tr:hover {
+  background: #f2f6ff;
+  cursor: pointer;
+}
+
+.tabla-lineas tbody tr.fila-seleccionada {
+  background: #dbe7ff;
+}
+
+.tabla-lineas .boton-quitar-fila {
+  background: none;
+  border: none;
+  color: var(--rojo-alerta);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.col-w-item { width: 34px; }
+.col-w-producto { width: 130px; }
+.col-w-nombre { width: 210px; }
+.col-w-almacen { width: 90px; }
+.col-w-precio { width: 100px; }
+.col-w-cantidad { width: 80px; }
+.col-w-dsto { width: 75px; }
+.col-w-iva { width: 70px; }
+.col-w-nivel { width: 110px; }
+.col-w-total { width: 100px; }
+.col-w-accion { width: 34px; }
+
+.texto-ayuda {
+  font-size: 11.5px;
+  color: #77839e;
+  margin: 4px 0 10px;
+}
+
+.franja-inferior {
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+  margin-bottom: 10px;
+}
+
+.columna-observaciones {
+  flex: 1 1 60%;
+  min-width: 0;
+}
+
+.columna-totales {
+  flex: 0 0 280px;
+  background: white;
+  border: 1px solid #dde3ef;
+  border-radius: 6px;
+  padding: 10px 14px;
+}
+
+.linea-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 0;
+  border-bottom: 1px dashed #e3e8f2;
+  font-size: 13px;
+}
+
+.linea-total input {
+  width: 70px;
+  text-align: right;
+}
+
+/* Refuerzo directo por si algo en estilos.css pisa la alineación general */
+#pedido-descuento-general,
+#pedido-impuesto-general,
+#pedido-tasa,
+#cotizacion-descuento-general,
+#cotizacion-impuesto-general,
+#cotizacion-tasa {
+  text-align: right;
+}
+
+.linea-total-final {
+  border-bottom: none;
+  border-top: 2px solid var(--azul-noche);
+  margin-top: 4px;
+  padding-top: 8px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* ---------- Responsividad: Escritorio (por defecto) ≥1024px ---------- */
+
+/* ---------- Tablet: 641px–1024px ---------- */
+@media (max-width: 1024px) {
+  .franja-inferior { flex-direction: column; }
+  .columna-totales { flex: 1 1 auto; }
+  .grupo-campo.ancho-triple,
+  .grupo-campo.ancho-doble,
+  .grupo-campo.ancho-reducido,
+  .grupo-campo.ancho-cotizacion { flex: 1 1 100%; }
+}
+
+/* ---------- Teléfono: ≤640px ---------- */
+@media (max-width: 640px) {
+  /* El modal ocupa toda la pantalla, sin márgenes ni bordes redondeados */
+  .modal-hoja-captura { padding: 0; align-items: stretch; }
+  .hoja-captura {
+    max-width: 100%;
+    min-height: 100%;
+    border-radius: 0;
+    padding: 16px 12px 90px; /* espacio abajo para los botones */
+  }
+
+  /* Todos los campos del formulario a una sola columna */
+  .grupo-campo { flex: 1 1 100% !important; }
+  .grupo-campo.ancho-cotizacion input { width: 100%; }
+  .separador-vertical { display: none; }
+
+  /* Botones de acción a ancho completo, más fáciles de tocar */
+  .acciones-formulario { flex-direction: column; }
+  .acciones-formulario .boton { width: 100%; }
+
+  /* La grilla sigue con scroll horizontal propio (como cualquier
+     hoja de cálculo/ERP en móvil) pero un poco más compacta */
+  .tabla-lineas-envoltorio { min-height: 160px; max-height: 240px; }
+  .col-w-producto { width: 110px; }
+  .col-w-nombre { width: 150px; }
+  .col-w-almacen { width: 70px; }
+  .col-w-nivel { width: 90px; }
+
+  /* Totales: campos numéricos un poco más grandes para el dedo */
+  .linea-total input { width: 90px; padding: 7px 8px; }
+}
+
+/* ---------- Buscador desplegable de dos columnas ---------- */
+
+.panel-buscador {
+  position: fixed;
+  min-width: 320px;
+  background: white;
+  border: 1px solid #b8c2d6;
+  border-radius: 4px;
+  box-shadow: 0 6px 18px rgba(22, 35, 61, 0.18);
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.tabla-buscador {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.tabla-buscador thead th {
+  position: sticky;
+  top: 0;
+  background: #eef2fb;
+  color: #5b6b8c;
+  text-align: left;
+  padding: 5px 8px;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid #dde3ef;
+}
+
+.tabla-buscador td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #f2f4f9;
+  white-space: nowrap;
+}
+
+.tabla-buscador .col-codigo {
+  width: 110px;
+  color: #77839e;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+}
+
+.tabla-buscador tbody tr {
+  cursor: pointer;
+}
+
+.tabla-buscador tbody tr:hover,
+.tabla-buscador tbody tr.resaltada {
+  background: #dbe7ff;
+}
+
+.buscador-sin-resultados {
+  padding: 10px 12px;
+  color: #77839e;
+  font-size: 12.5px;
+}
+
+.buscador-crear {
+  padding: 9px 12px;
+  border-top: 1px solid #e3e8f2;
+  background: #f7faff;
+  color: var(--ambar, #b8730f);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.buscador-crear:hover {
+  background: #fff4e3;
+}
+
+/* ---------- Grid editable ---------- */
+
+.tabla-lineas td.celda-editable {
+  padding: 0;
+  position: relative;
+}
+
+.tabla-lineas td.celda-editable input,
+.tabla-lineas td.celda-editable select {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 5px 8px;
+  font-size: 12.5px;
+  box-sizing: border-box;
+  border-radius: 0;
+}
+
+.tabla-lineas td.celda-editable input:focus,
+.tabla-lineas td.celda-editable select:focus {
+  outline: 2px solid var(--ambar, #d98c1f);
+  outline-offset: -2px;
+  background: #fffdf7;
+}
+
+.tabla-lineas td.celda-editable input.col-num-input {
+  text-align: right;
+}
+
+.tabla-lineas tr.fila-grupo-nivel td {
+  background: #e8eefc;
+  font-weight: 700;
+  color: var(--azul-noche);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 5px 8px;
+}
+
+.tabla-lineas tr.fila-nueva td {
+  background: #fcfdff;
+}
+
+.tabla-lineas-envoltorio {
+  max-height: 300px;
+  min-height: 240px; /* reserva espacio para ~6 líneas + encabezado, para
+                        que la zona de totales no se recorra hacia abajo
+                        mientras la grilla todavía tiene pocas líneas */
+}
+
+/* La celda de Acciones en las listas (Pedidos, Cotización) ahora
+   tiene 4 botones (Editar/Copiar/Imprimir/Eliminar). Se encogen un
+   poco (menos relleno y letra) para que los 4 quepan en una sola
+   línea; flex-wrap queda como respaldo solo si la ventana es muy
+   angosta. */
+.celda-acciones {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end;
+  gap: 4px;
+  row-gap: 4px;
+  max-width: 320px !important;
+}
+
+.celda-acciones .boton {
+  padding: 5px 8px !important;
+  font-size: 12px !important;
+}
+
+/* ---------- Campos adicionales plegables (documentos) ----------
+   Van cerrados por defecto para que el formulario no crezca hacia
+   abajo aunque se usen los 10 campos. Si algún campo tiene datos, el
+   encabezado muestra "● con datos" (lo marca js/campos-adicionales-
+   plegable.js). Si no hay etiquetas configuradas, la sección entera
+   se oculta. Los campos siguen en el formulario aunque estén
+   cerrados, así que se guardan igual. */
+.campos-adicionales-plegable {
+  margin: 10px 0 0;
+  padding-top: 8px;
+  border-top: 1px dashed #e3e8f2;
+}
+
+.campos-adicionales-plegable:not(:has(#contenedor-campos-notas > *)) {
+  display: none;
+}
+
+.campos-adicionales-plegable > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: #5b6b8c;
+  font-weight: 600;
+}
+
+.campos-adicionales-plegable > summary::-webkit-details-marker {
+  display: none;
+}
+
+.campos-adicionales-plegable > summary::before {
+  content: '\25B8';
+  font-size: 10px;
+  transition: transform 0.15s;
+}
+
+.campos-adicionales-plegable[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.campos-adicionales-plegable.con-datos > summary::after {
+  content: '\25CF  con datos';
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ambar, #d98c1f);
+}
+
+.campos-adicionales-plegable #contenedor-campos-notas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px 12px;
+  margin: 8px 0 0;
+}
+
+.campos-adicionales-plegable #contenedor-campos-notas > * {
+  min-width: 0;
+  margin: 0;
+}

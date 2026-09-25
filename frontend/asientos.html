@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Asientos Contables — Sistema Administrativo</title>
   <link rel="stylesheet" href="css/estilos.css" />
+  <link rel="stylesheet" href="css/hoja-captura.css" />
   <style>
     .fila-totales-asiento { display: flex; gap: 24px; margin-top: 10px; font-size: 13px; }
     .fila-totales-asiento b { margin-right: 4px; }
@@ -62,7 +63,9 @@
     <div style="background: var(--papel-panel); border-radius: var(--radio); max-width: 800px; margin: 0 auto; padding: 24px; position: relative;">
       <button type="button" id="boton-cerrar-modal-asiento" style="position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 22px; cursor: pointer; color: var(--texto-suave);">✕</button>
       <h2>Nuevo asiento manual</h2>
+      <p id="asiento-estado-previsto" style="color: var(--texto-suave); font-size: 13px; margin-top: -6px;"></p>
       <form id="form-asiento">
+        <h3 style="font-size: 14px; margin: 0 0 8px;">Encabezado</h3>
         <div class="formulario-grid">
           <div class="campo"><label for="asiento-fecha">Fecha *</label><input type="date" id="asiento-fecha" required /></div>
           <div class="campo">
@@ -78,11 +81,22 @@
           <div class="campo campo-ancho"><label for="asiento-descripcion">Descripción</label><input type="text" id="asiento-descripcion" autocomplete="off" /></div>
         </div>
 
-        <h3 style="font-size: 14px; margin: 16px 0 8px;">Líneas</h3>
-        <table>
-          <thead><tr><th>Cuenta</th><th style="width:130px;">Débito</th><th style="width:130px;">Crédito</th><th style="width:40px;"></th></tr></thead>
-          <tbody id="lineas-asiento"></tbody>
-        </table>
+        <h3 style="font-size: 14px; margin: 16px 0 8px;">Detalle</h3>
+        <div class="tabla-lineas-envoltorio">
+          <table class="tabla-lineas">
+            <thead>
+              <tr>
+                <th class="col-w-item">#</th>
+                <th>Cuenta</th>
+                <th style="width:150px;">Centro de Costo</th>
+                <th class="col-num" style="width:130px;">Débito</th>
+                <th class="col-num" style="width:130px;">Crédito</th>
+                <th class="col-w-accion"></th>
+              </tr>
+            </thead>
+            <tbody id="lineas-asiento"></tbody>
+          </table>
+        </div>
         <button type="button" class="boton boton-secundario" id="boton-agregar-linea" style="margin-top:8px;">+ Agregar línea</button>
 
         <div class="fila-totales-asiento">
@@ -103,9 +117,11 @@
     <div style="background: var(--papel-panel); border-radius: var(--radio); max-width: 800px; margin: 0 auto; padding: 24px; position: relative;">
       <button type="button" id="boton-cerrar-modal-detalle" style="position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 22px; cursor: pointer; color: var(--texto-suave);">✕</button>
       <h2 id="detalle-titulo">Detalle del asiento</h2>
+      <h3 style="font-size: 14px; margin: 0 0 4px;">Encabezado</h3>
       <p id="detalle-info" style="color: var(--texto-suave); font-size: 13px;"></p>
+      <h3 style="font-size: 14px; margin: 12px 0 8px;">Detalle</h3>
       <table>
-        <thead><tr><th>Cuenta</th><th>Descripción</th><th style="text-align:right;">Débito</th><th style="text-align:right;">Crédito</th></tr></thead>
+        <thead><tr><th>Cuenta</th><th>Centro de Costo</th><th>Descripción</th><th style="text-align:right;">Débito</th><th style="text-align:right;">Crédito</th></tr></thead>
         <tbody id="tabla-detalle-lineas"></tbody>
       </table>
     </div>

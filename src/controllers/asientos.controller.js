@@ -38,7 +38,7 @@ async function obtener(req, res) {
 
   const { data, error } = await supabase
     .from('asientos_contables')
-    .select('*, asientos_detalle ( *, cuentas_contables ( codigo, nombre ) )')
+    .select('*, asientos_detalle ( *, cuentas_contables ( codigo, nombre ), centros_costo ( codigo, nombre ) )')
     .eq('id', id)
     .eq('compania_id', req.companiaId)
     .single();

@@ -5,6 +5,7 @@ function escaparHtml(texto) {
 
 let asientos = [];
 let cuentasDisponibles = [];
+let centrosDisponibles = [];
 let contadorLinea = 0;
 
 const ETIQUETAS_ORIGEN = {
@@ -18,6 +19,11 @@ async function cargarCuentas() {
     cuentasDisponibles = (await llamarApi('/cuentas-contables')).filter((c) => c.acepta_movimiento && c.activa);
   } catch (err) {
     mostrarMensaje(err.message, 'error');
+  }
+  try {
+    centrosDisponibles = (await llamarApi('/centros-costo')).filter((c) => c.activo);
+  } catch (err) {
+    // silencioso — si no carga, la columna queda con "(ninguno)" nada más
   }
 }
 
@@ -110,6 +116,7 @@ async function verDetalle(id) {
     document.getElementById('detalle-info').textContent = formatearFecha(a.fecha) + ' · ' + (a.estado === 'contabilizado' ? 'Contabilizado' : 'Pendiente') + (a.descripcion ? ' · ' + a.descripcion : '');
     document.getElementById('tabla-detalle-lineas').innerHTML = a.asientos_detalle.map((l) => (
       '<tr><td>' + escaparHtml(l.cuentas_contables ? l.cuentas_contables.codigo + ' — ' + l.cuentas_contables.nombre : '') + '</td>' +
+      '<td>' + escaparHtml(l.centros_costo ? l.centros_costo.codigo + ' — ' + l.centros_costo.nombre : '—') + '</td>' +
       '<td>' + escaparHtml(l.descripcion || '') + '</td>' +
       '<td style="text-align:right;">' + (Number(l.debito) > 0 ? formatearMonto(l.debito) : '') + '</td>' +
       '<td style="text-align:right;">' + (Number(l.credito) > 0 ? formatearMonto(l.credito) : '') + '</td></tr>'
@@ -125,34 +132,72 @@ document.getElementById('boton-cerrar-modal-detalle').addEventListener('click', 
 
 // ---------- Nuevo asiento manual ----------
 
-document.getElementById('boton-nuevo-asiento').addEventListener('click', () => {
+document.getElementById('boton-nuevo-asiento').addEventListener('click', async () => {
   document.getElementById('form-asiento').reset();
   document.getElementById('lineas-asiento').innerHTML = '';
   agregarLinea();
   agregarLinea();
   document.getElementById('modal-asiento').style.display = 'block';
   actualizarTotales();
+
+  const previsto = document.getElementById('asiento-estado-previsto');
+  previsto.textContent = '';
+  try {
+    const config = await llamarApi('/configuracion-contable');
+    const ETIQUETAS_MODO = {
+      automatico: 'Este asiento se creará ya como Contabilizado (modo automático).',
+      manual: 'Este asiento se creará como Pendiente — hay que contabilizarlo aparte.',
+      proceso: 'Este asiento se creará como Pendiente — se contabiliza por lote, en Proceso de Contabilización.',
+    };
+    previsto.textContent = ETIQUETAS_MODO[config.modo_contabilizacion] || '';
+  } catch (err) {
+    // silencioso — si falla, simplemente no se muestra el aviso
+  }
 });
 document.getElementById('boton-cerrar-modal-asiento').addEventListener('click', () => {
   document.getElementById('modal-asiento').style.display = 'none';
 });
 
+function renumerarFilas() {
+  document.querySelectorAll('#lineas-asiento tr').forEach((fila, i) => {
+    const celdaNumero = fila.querySelector('.col-item');
+    if (celdaNumero) celdaNumero.textContent = i + 1;
+  });
+}
+
+function esUltimaFila(fila) {
+  return fila === document.getElementById('lineas-asiento').lastElementChild;
+}
+
 function agregarLinea() {
   contadorLinea++;
   const idLinea = 'linea-' + contadorLinea;
-  const opciones = cuentasDisponibles.map((c) => '<option value="' + c.id + '">' + escaparHtml(c.codigo + ' — ' + c.nombre) + '</option>').join('');
+  const opciones = '<option value="">Elige una cuenta...</option>' +
+    cuentasDisponibles.map((c) => '<option value="' + c.id + '">' + escaparHtml(c.codigo + ' — ' + c.nombre) + '</option>').join('');
+  const opcionesCentro = '<option value="">(ninguno)</option>' +
+    centrosDisponibles.map((c) => '<option value="' + c.id + '">' + escaparHtml(c.codigo + ' — ' + c.nombre) + '</option>').join('');
 
   const fila = document.createElement('tr');
   fila.id = idLinea;
   fila.innerHTML =
-    '<td><select class="linea-cuenta" style="width:100%;">' + opciones + '</select></td>' +
-    '<td><input type="number" class="linea-debito" step="0.01" min="0" value="0" style="width:100%;" /></td>' +
-    '<td><input type="number" class="linea-credito" step="0.01" min="0" value="0" style="width:100%;" /></td>' +
-    '<td><button type="button" class="boton boton-peligro" data-quitar="' + idLinea + '">✕</button></td>';
+    '<td class="col-item">' + (document.querySelectorAll('#lineas-asiento tr').length + 1) + '</td>' +
+    '<td class="celda-editable"><select class="linea-cuenta">' + opciones + '</select></td>' +
+    '<td class="celda-editable"><select class="linea-centro-costo">' + opcionesCentro + '</select></td>' +
+    '<td class="celda-editable col-num"><input type="number" class="linea-debito col-num-input" step="0.01" min="0" value="0" /></td>' +
+    '<td class="celda-editable col-num"><input type="number" class="linea-credito col-num-input" step="0.01" min="0" value="0" /></td>' +
+    '<td><button type="button" class="boton-quitar-fila" data-quitar="' + idLinea + '">✕</button></td>';
 
   document.getElementById('lineas-asiento').appendChild(fila);
   fila.querySelector('.linea-debito').addEventListener('input', actualizarTotales);
   fila.querySelector('.linea-credito').addEventListener('input', actualizarTotales);
+
+  // Igual que en Pedidos: al elegir cuenta en la última fila, se agrega
+  // sola una fila nueva en blanco al final, para seguir capturando.
+  fila.querySelector('.linea-cuenta').addEventListener('change', function() {
+    if (this.value && esUltimaFila(fila)) agregarLinea();
+  });
+
+  return fila;
 }
 document.getElementById('boton-agregar-linea').addEventListener('click', agregarLinea);
 
@@ -160,6 +205,7 @@ document.getElementById('lineas-asiento').addEventListener('click', (evento) => 
   const boton = evento.target.closest('[data-quitar]');
   if (!boton) return;
   document.getElementById(boton.dataset.quitar).remove();
+  renumerarFilas();
   actualizarTotales();
 });
 
@@ -186,6 +232,7 @@ document.getElementById('form-asiento').addEventListener('submit', async (evento
 
   const lineas = [...document.querySelectorAll('#lineas-asiento tr')].map((fila) => ({
     cuenta_contable_id: fila.querySelector('.linea-cuenta').value,
+    centro_costo_id: fila.querySelector('.linea-centro-costo').value || null,
     debito: Number(fila.querySelector('.linea-debito').value) || 0,
     credito: Number(fila.querySelector('.linea-credito').value) || 0,
   })).filter((l) => l.debito > 0 || l.credito > 0);
