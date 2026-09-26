@@ -84,10 +84,17 @@ async function eliminar(req, res) {
 // POST /cuentas-contables/importar — carga masiva desde un CSV ya
 // parseado en el frontend. Cada fila: { codigo, nombre, tipo,
 // acepta_movimiento, activa, cuenta_padre_codigo }.
-// Va en dos pasadas porque una cuenta puede referenciar como padre a
-// otra que viene MÁS ABAJO en el mismo archivo (o que ya existía):
-//   1) crea/actualiza todas las cuentas por su código (sin el padre).
-//   2) ahora que todas existen, resuelve cuenta_padre_codigo -> id.
+//
+// Se guarda en TANDAS (no cuenta por cuenta), así 500+ cuentas tardan
+// segundos en vez de minutos:
+//   1) upsert de todas las cuentas por (compania_id, codigo), sin el padre.
+//   2) con todas ya creadas, se resuelve cuenta_padre_codigo -> id y se
+//      guarda también en tandas.
+// Si un código viene repetido en el archivo, vale la última fila.
+const TAMANO_TANDA = 500;
+const TIPOS_CUENTA = ['activo', 'pasivo', 'patrimonio', 'ingreso', 'gasto', 'costo'];
+const esFalso = (v) => v === false || v === 'false' || v === '0' || v === 'no' || v === 'No';
+
 async function importar(req, res) {
   const filas = req.body.filas;
   if (!Array.isArray(filas) || filas.length === 0) {
@@ -95,61 +102,120 @@ async function importar(req, res) {
   }
 
   const errores = [];
-  let creadas = 0;
-  let actualizadas = 0;
+  const porCodigo = new Map();
 
-  // Pasada 1: upsert por (compania_id, codigo).
-  for (const fila of filas) {
+  filas.forEach((fila, i) => {
     const codigo = (fila.codigo || '').trim();
     const nombre = (fila.nombre || '').trim();
     const tipo = (fila.tipo || '').trim().toLowerCase();
-
-    if (!codigo || !nombre || !['activo', 'pasivo', 'patrimonio', 'ingreso', 'gasto', 'costo'].includes(tipo)) {
-      errores.push('Fila inválida (código: "' + codigo + '"): faltan datos o el tipo no es válido.');
-      continue;
+    if (!codigo || !nombre || !TIPOS_CUENTA.includes(tipo)) {
+      errores.push('Fila ' + (i + 2) + ' (código "' + codigo + '"): faltan datos o el tipo no es válido.');
+      return;
     }
-
-    const { data: existente } = await supabase
-      .from('cuentas_contables')
-      .select('id')
-      .eq('compania_id', req.companiaId)
-      .eq('codigo', codigo)
-      .maybeSingle();
-
-    const valores = {
+    porCodigo.set(codigo, {
+      compania_id: req.companiaId,
+      codigo,
       nombre,
       tipo,
-      acepta_movimiento: fila.acepta_movimiento === false || fila.acepta_movimiento === 'false' || fila.acepta_movimiento === '0' ? false : true,
-      activa: fila.activa === false || fila.activa === 'false' || fila.activa === '0' ? false : true,
-    };
+      acepta_movimiento: !esFalso(fila.acepta_movimiento),
+      activa: !esFalso(fila.activa),
+      _padre: (fila.cuenta_padre_codigo || '').trim(),
+    });
+  });
 
-    if (existente) {
-      await supabase.from('cuentas_contables').update(valores).eq('id', existente.id);
-      actualizadas++;
-    } else {
-      await supabase.from('cuentas_contables').insert([{ ...valores, compania_id: req.companiaId, codigo }]);
-      creadas++;
-    }
+  const validas = [...porCodigo.values()];
+  if (validas.length === 0) return res.status(400).json({ error: 'Ninguna fila es válida.', errores });
+
+  // Cuáles ya existían (para decir cuántas se crearon y cuántas se actualizaron)
+  const { data: previas, error: errorPrevias } = await supabase
+    .from('cuentas_contables').select('codigo').eq('compania_id', req.companiaId);
+  if (errorPrevias) return res.status(500).json({ error: errorPrevias.message });
+  const existentes = new Set((previas || []).map((c) => c.codigo));
+
+  // Pasada 1: crear / actualizar en tandas (sin tocar el padre)
+  const idPorCodigo = {};
+  for (let i = 0; i < validas.length; i += TAMANO_TANDA) {
+    const tanda = validas.slice(i, i + TAMANO_TANDA).map(({ _padre, ...resto }) => resto);
+    const { data, error } = await supabase
+      .from('cuentas_contables')
+      .upsert(tanda, { onConflict: 'compania_id,codigo' })
+      .select('id, codigo');
+    if (error) return res.status(500).json({ error: 'Error guardando las cuentas: ' + error.message, errores });
+    (data || []).forEach((c) => { idPorCodigo[c.codigo] = c.id; });
   }
 
-  // Pasada 2: resolver cuenta_padre_codigo -> cuenta_padre_id, ahora
-  // que ya existen todas las cuentas del archivo.
+  // Incluye cuentas que ya existían y que el archivo usa como padre
   const { data: todas } = await supabase.from('cuentas_contables').select('id, codigo').eq('compania_id', req.companiaId);
-  const idPorCodigo = Object.fromEntries((todas || []).map((c) => [c.codigo, c.id]));
+  (todas || []).forEach((c) => { if (!idPorCodigo[c.codigo]) idPorCodigo[c.codigo] = c.id; });
 
-  for (const fila of filas) {
-    const codigo = (fila.codigo || '').trim();
-    const codigoPadre = (fila.cuenta_padre_codigo || '').trim();
-    if (!codigo || !codigoPadre) continue;
-
-    if (!idPorCodigo[codigoPadre]) {
-      errores.push('La cuenta ' + codigo + ' referencia un padre "' + codigoPadre + '" que no existe.');
-      continue;
+  // Pasada 2: enlazar cada cuenta con su padre, también en tandas
+  const conPadre = [];
+  validas.forEach((c) => {
+    if (!c._padre) return;
+    if (!idPorCodigo[c._padre]) {
+      errores.push('La cuenta ' + c.codigo + ' referencia un padre "' + c._padre + '" que no existe.');
+      return;
     }
-    await supabase.from('cuentas_contables').update({ cuenta_padre_id: idPorCodigo[codigoPadre] }).eq('id', idPorCodigo[codigo]);
+    const { _padre, ...resto } = c;
+    conPadre.push({ ...resto, id: idPorCodigo[c.codigo], cuenta_padre_id: idPorCodigo[_padre] });
+  });
+  for (let i = 0; i < conPadre.length; i += TAMANO_TANDA) {
+    const { error } = await supabase
+      .from('cuentas_contables')
+      .upsert(conPadre.slice(i, i + TAMANO_TANDA), { onConflict: 'id' });
+    if (error) return res.status(500).json({ error: 'Las cuentas se guardaron, pero falló el enlace con sus cuentas padre: ' + error.message, errores });
   }
 
-  res.json({ creadas, actualizadas, errores });
+  const creadas = validas.filter((c) => !existentes.has(c.codigo)).length;
+  res.json({ creadas, actualizadas: validas.length - creadas, errores });
 }
 
-module.exports = { listar, crear, actualizar, eliminar, importar };
+// POST /cuentas-contables/vaciar — borra TODO el plan de cuentas de la
+// compañía actual para volver a cargarlo (por ejemplo, desde un CSV).
+// Protecciones:
+//   - hay que mandar { confirmacion: 'BORRAR' }
+//   - si alguna cuenta ya tiene asientos contables, NO se borra nada
+//     (se perdería la contabilidad registrada).
+// Las cuentas asignadas a clientes, proveedores, artículos, cuentas
+// bancarias y configuración contable quedan en blanco (on delete set null).
+async function vaciar(req, res) {
+  if (!req.body || req.body.confirmacion !== 'BORRAR') {
+    return res.status(400).json({ error: 'Para vaciar el plan de cuentas escribe BORRAR como confirmación.' });
+  }
+
+  const { data: cuentas, error: errorCuentas } = await supabase
+    .from('cuentas_contables')
+    .select('id')
+    .eq('compania_id', req.companiaId);
+  if (errorCuentas) return res.status(500).json({ error: errorCuentas.message });
+  if (!cuentas || cuentas.length === 0) return res.json({ eliminadas: 0 });
+
+  const ids = cuentas.map((c) => c.id);
+  for (let i = 0; i < ids.length; i += 200) {
+    const { count, error } = await supabase
+      .from('asientos_detalle')
+      .select('id', { count: 'exact', head: true })
+      .in('cuenta_contable_id', ids.slice(i, i + 200));
+    if (error) return res.status(500).json({ error: error.message });
+    if (count && count > 0) {
+      return res.status(409).json({ error: 'No se puede vaciar: hay cuentas con asientos contables registrados. Elimina o anula esos asientos primero.' });
+    }
+  }
+
+  // Primero se sueltan los vínculos padre-hijo y luego se borra todo
+  const { error: errorPadres } = await supabase
+    .from('cuentas_contables')
+    .update({ cuenta_padre_id: null })
+    .eq('compania_id', req.companiaId);
+  if (errorPadres) return res.status(500).json({ error: errorPadres.message });
+
+  const { error: errorBorrar } = await supabase
+    .from('cuentas_contables')
+    .delete()
+    .eq('compania_id', req.companiaId);
+  if (errorBorrar) return res.status(500).json({ error: errorBorrar.message });
+
+  res.json({ eliminadas: ids.length });
+}
+
+module.exports = { listar, crear, actualizar, eliminar, importar, vaciar };

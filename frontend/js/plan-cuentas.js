@@ -189,17 +189,67 @@ document.getElementById('input-importar-cuentas').addEventListener('change', asy
       };
     });
 
-    const resultado = await llamarApi('/cuentas-contables/importar', { method: 'POST', body: JSON.stringify({ filas }) });
+    // Aviso mientras trabaja (y evita que se presione dos veces)
+    const botonImportar = document.getElementById('boton-importar-cuentas');
+    botonImportar.disabled = true;
+    botonImportar.textContent = 'Importando…';
+    mostrarMensaje('Importando ' + filas.length + ' cuenta(s)… por favor espera, no cierres la pantalla.', 'exito');
+    document.body.style.cursor = 'progress';
 
-    let mensaje = resultado.creadas + ' cuenta(s) creada(s), ' + resultado.actualizadas + ' actualizada(s).';
-    if (resultado.errores.length > 0) mensaje += ' ' + resultado.errores.length + ' fila(s) con problemas (revisa la consola).';
+    let resultado;
+    try {
+      resultado = await llamarApi('/cuentas-contables/importar', { method: 'POST', body: JSON.stringify({ filas }) });
+    } finally {
+      botonImportar.disabled = false;
+      botonImportar.textContent = 'Importar (CSV)';
+      document.body.style.cursor = '';
+    }
+
+    // La lista se actualiza sola al terminar
+    await cargarCuentas();
+
+    let mensaje = 'Importación terminada: ' + resultado.creadas + ' cuenta(s) creada(s), ' + resultado.actualizadas + ' actualizada(s).';
+    if (resultado.errores.length > 0) {
+      mensaje += ' ' + resultado.errores.length + ' fila(s) con problemas.';
+      console.warn('Errores al importar el Plan de Cuentas:', resultado.errores);
+      alert(mensaje + '\n\n' + resultado.errores.slice(0, 15).join('\n') +
+        (resultado.errores.length > 15 ? '\n… y ' + (resultado.errores.length - 15) + ' más (ver consola, F12).' : ''));
+    }
     mostrarMensaje(mensaje, resultado.errores.length > 0 ? 'error' : 'exito');
-    if (resultado.errores.length > 0) console.warn('Errores al importar el Plan de Cuentas:', resultado.errores);
+  } catch (err) {
+    mostrarMensaje('No se pudo importar: ' + err.message, 'error');
+    alert('No se pudo importar el plan de cuentas:\n' + err.message);
+  } finally {
+    evento.target.value = '';
+  }
+});
 
+
+// ---------- Vaciar el plan de cuentas (para volver a importarlo) ----------
+
+document.getElementById('boton-vaciar-cuentas').addEventListener('click', async () => {
+  const total = Array.isArray(cuentas) ? cuentas.length : 0;
+  if (total === 0) {
+    mostrarMensaje('El plan de cuentas ya está vacío.', 'exito');
+    return;
+  }
+  const respuesta = prompt(
+    'Se borrarán las ' + total + ' cuentas del plan de cuentas de esta compañía.\n\n' +
+    'Las cuentas asignadas a clientes, proveedores, artículos y bancos quedarán en blanco.\n' +
+    'Si alguna cuenta tiene asientos contables, no se borrará nada.\n\n' +
+    'Para confirmar escribe BORRAR:'
+  );
+  if (respuesta === null) return;
+  if (respuesta.trim().toUpperCase() !== 'BORRAR') {
+    alert('No se borró nada: la confirmación no coincide.');
+    return;
+  }
+  try {
+    const r = await llamarApi('/cuentas-contables/vaciar', { method: 'POST', body: JSON.stringify({ confirmacion: 'BORRAR' }) });
+    mostrarMensaje(r.eliminadas + ' cuenta(s) eliminada(s). Ya puedes importar el plan de cuentas nuevo.', 'exito');
     await cargarCuentas();
   } catch (err) {
     mostrarMensaje(err.message, 'error');
-  } finally {
-    evento.target.value = '';
+    alert(err.message);
   }
 });

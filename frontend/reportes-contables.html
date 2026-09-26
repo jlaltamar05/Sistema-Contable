@@ -3,8 +3,82 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reportes Contables — Sistema Administrativo</title>
+  <title>Reportes Contables — Sistema Contable</title>
   <link rel="stylesheet" href="css/estilos.css" />
+  <style>
+    /* Mismo estilo que los informes del Administrativo:
+       filtros a la izquierda, hojas de impresión a la derecha */
+    .visor-cuerpo { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 14px; align-items: start; }
+    .visor-cuerpo.sin-filtros { grid-template-columns: auto minmax(0, 1fr); }
+    .panel-filtros { position: sticky; top: 12px; margin: 0; padding: 14px 16px; max-height: calc(100vh - 24px); overflow-y: auto; }
+    .visor-cuerpo.sin-filtros .panel-filtros { display: none; }
+    .cabecera-filtros { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .cabecera-filtros h2 { margin: 0; font-size: 15px; }
+    .boton-plegar { background: none; border: 1px solid var(--linea); border-radius: var(--radio); cursor: pointer; color: var(--texto-suave); padding: 2px 8px; font-size: 14px; }
+    .boton-plegar:hover { border-color: var(--ambar); }
+    .pestana-filtros {
+      display: none; position: sticky; top: 12px; writing-mode: vertical-rl; transform: rotate(180deg);
+      background: var(--papel-panel); border: 1px solid var(--linea); border-radius: var(--radio);
+      padding: 12px 6px; cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--azul-noche-suave);
+    }
+    .visor-cuerpo.sin-filtros .pestana-filtros { display: block; }
+    .filtros-lista { display: flex; flex-direction: column; gap: 10px; }
+    .filtros-lista .campo { width: 100%; min-width: 0; }
+    .filtros-lista .campo input, .filtros-lista .campo select { width: 100%; box-sizing: border-box; }
+    .atajos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .atajos .boton { padding: 5px 8px; font-size: 12px; }
+    .resumen-visor { margin: 10px 0 0; color: var(--texto-suave); font-size: 12.5px; text-align: center; }
+
+    .paginas-scroll { background: #dcd8cc; padding: 20px; border-radius: var(--radio); overflow: auto; min-height: 420px; }
+    .paginas-vacio { color: #5b6477; text-align: center; padding: 80px 20px; font-size: 14px; }
+    .pagina-informe {
+      background: #fff; margin: 0 auto 24px; box-shadow: 0 4px 18px rgba(22,35,61,.18);
+      position: relative; box-sizing: border-box; color: #111; overflow: hidden;
+      font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .contenido-pagina { position: relative; height: 100%; }
+
+    /* Encabezado de la hoja */
+    .enc-hoja { display: flex; align-items: flex-start; gap: 12px; }
+    .enc-hoja .logo { width: 80px; height: 48px; object-fit: contain; }
+    .enc-hoja .cia { flex: 1; }
+    .enc-hoja .cia .nombre { font-size: 13pt; font-weight: 700; }
+    .enc-hoja .cia .rif { font-size: 8.5pt; color: #333; }
+    .enc-hoja .impreso { font-size: 8pt; color: #333; text-align: right; white-space: nowrap; }
+    .titulo-hoja { text-align: center; margin: 8px 0 2px; font-size: 13pt; font-weight: 700; }
+    .subtitulo-hoja { text-align: center; font-size: 9pt; color: #4a5470; margin-bottom: 10px; }
+    .enc-corto { display: flex; justify-content: space-between; font-size: 8.5pt; color: #333; border-bottom: 1px solid #9aa3b5; padding-bottom: 4px; margin-bottom: 8px; }
+    .pie-hoja { position: absolute; left: 0; right: 0; bottom: 0; border-top: 1px solid #9aa3b5; padding-top: 4px; font-size: 8pt; display: flex; justify-content: space-between; color: #333; }
+
+    /* Tabla del reporte */
+    table.hoja { width: 100%; border-collapse: collapse; font-size: 8.5pt; table-layout: fixed; }
+    .pagina-informe table.hoja th { background: none !important; color: #111 !important; text-transform: none !important; letter-spacing: 0 !important; font-size: 8.5pt !important; text-align: left; font-weight: 700; padding: 4px 5px !important; border: none !important; border-bottom: 2px solid #16233d !important; white-space: nowrap; overflow: hidden; }
+    .pagina-informe table.hoja td { padding: 2px 5px !important; border: none !important; line-height: 1.3; vertical-align: top; overflow: hidden; word-wrap: break-word; background: none; font-size: 8.5pt; }
+    .pagina-informe table.hoja th.der { text-align: right; }
+    .pagina-informe table.hoja tr:nth-child(even) td { background: none; }
+    table.hoja .der { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    table.hoja .cen { text-align: center; }
+    .pagina-informe table.hoja tr.grupo td { background: #eef1f7 !important; font-weight: 700; color: #16233d; padding-top: 4px !important; padding-bottom: 3px !important; }
+    .pagina-informe table.hoja tr.seccion td { background: #16233d !important; color: #fff; font-weight: 700; letter-spacing: .3px; padding: 4px 5px !important; }
+    .pagina-informe table.hoja tr.subtotal td { border-top: 1px solid #9aa3b5 !important; font-weight: 700; padding-bottom: 5px !important; }
+    .pagina-informe table.hoja tr.total td { border-top: 2px solid #16233d !important; font-weight: 700; font-size: 9pt; padding-top: 5px !important; }
+    table.hoja tr.aviso td { color: #b42318; font-weight: 700; text-align: center; padding: 8px; }
+    table.hoja tr.vacio td { text-align: center; color: #6b7280; padding: 24px; }
+    table.hoja tr.nivel-1 td:first-child, table.hoja tr.nivel-1 td:nth-child(2) { font-weight: 700; }
+    .medidor { position: absolute; left: -99999px; top: 0; visibility: hidden; }
+
+    @media print {
+      body * { visibility: hidden !important; }
+      #paginas-informe, #paginas-informe * { visibility: visible !important; }
+      #paginas-informe { position: absolute; left: 0; top: 0; padding: 0 !important; background: none !important; zoom: 1 !important; overflow: visible !important; }
+      .pagina-informe { margin: 0 !important; box-shadow: none !important; page-break-after: always; break-after: page; }
+      .pagina-informe:last-child { page-break-after: auto; break-after: auto; }
+    }
+    @media (max-width: 900px) {
+      .visor-cuerpo { grid-template-columns: 1fr; }
+      .panel-filtros { position: static; max-height: none; }
+    }
+  </style>
 </head>
 <body class="pantalla-ancha" data-modulo="reportes-contables">
   <div class="app-shell">
@@ -13,77 +87,79 @@
     <main class="contenido">
       <div class="encabezado-pagina">
         <div>
-          <h1>Reportes Contables</h1>
-          <p>Libro Diario, Balance de Comprobación, Estado de Resultados y Balance General. Todos se pueden filtrar por estatus del asiento.</p>
+          <h1 id="titulo-pagina">Reportes Contables</h1>
+          <p>Libro Diario, Libro Mayor, Balance de Comprobación, Pérdidas y Ganancias y Balance General.</p>
         </div>
-        <div>
-          <a href="informe-constructor.html" class="boton boton-primario">🎨 Constructor de Informes</a>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+          <select id="visor-zoom" title="Tamaño de la vista (no afecta la impresión)" style="padding: 8px 10px; border: 1px solid var(--linea); border-radius: var(--radio); background: #fff;">
+            <option value="ajustar" selected>Ajustar al ancho</option>
+            <option value="0.75">75 %</option>
+            <option value="1">100 %</option>
+            <option value="1.25">125 %</option>
+          </select>
+          <button type="button" class="boton boton-secundario" id="boton-imprimir-reporte">Imprimir / PDF</button>
+          <button type="button" class="boton boton-secundario" id="boton-csv-reporte">Exportar a Excel</button>
         </div>
       </div>
 
       <div id="caja-mensaje" class="mensaje"></div>
 
-      <section class="panel">
-        <div class="formulario-grid">
-          <div class="campo">
-            <label for="reporte-tipo">Reporte</label>
-            <select id="reporte-tipo">
-              <option value="libro-diario">Libro Diario</option>
-              <option value="libro-mayor">Libro Mayor</option>
-              <option value="balance-comprobacion">Balance de Comprobación</option>
-              <option value="estado-resultados">Pérdidas y Ganancias</option>
-              <option value="balance-general">Balance General (a una fecha de corte)</option>
-            </select>
+      <div class="visor-cuerpo" id="visor-cuerpo">
+        <aside class="panel panel-filtros">
+          <div class="cabecera-filtros">
+            <h2>Filtros</h2>
+            <button type="button" class="boton-plegar" id="boton-plegar-filtros" title="Ocultar filtros">«</button>
           </div>
-          <div class="campo"><label for="reporte-desde">Desde</label><input type="date" id="reporte-desde" /></div>
-          <div class="campo"><label for="reporte-hasta">Hasta</label><input type="date" id="reporte-hasta" /></div>
-          <div class="campo">
-            <label for="reporte-estado">Estatus del asiento</label>
-            <select id="reporte-estado">
-              <option value="todos">Contabilizados y Pendientes</option>
-              <option value="contabilizado">Solo Contabilizados</option>
-              <option value="pendiente">Solo Pendientes</option>
-            </select>
+          <div class="filtros-lista">
+            <div class="campo">
+              <label for="reporte-tipo">Reporte</label>
+              <select id="reporte-tipo">
+                <option value="libro-diario">Libro Diario</option>
+                <option value="libro-mayor">Libro Mayor</option>
+                <option value="balance-comprobacion">Balance de Comprobación</option>
+                <option value="estado-resultados">Pérdidas y Ganancias</option>
+                <option value="balance-general">Balance General</option>
+              </select>
+            </div>
+            <div class="campo" id="campo-desde"><label for="reporte-desde">Desde</label><input type="date" id="reporte-desde" /></div>
+            <div class="campo"><label for="reporte-hasta" id="etiqueta-hasta">Hasta</label><input type="date" id="reporte-hasta" /></div>
+            <div class="campo">
+              <label for="reporte-estado">Estatus del asiento</label>
+              <select id="reporte-estado">
+                <option value="todos">Contabilizados y pendientes</option>
+                <option value="contabilizado">Solo contabilizados</option>
+                <option value="pendiente">Solo pendientes</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="reporte-orientacion">Hoja</label>
+              <select id="reporte-orientacion">
+                <option value="vertical">Carta vertical</option>
+                <option value="horizontal">Carta horizontal</option>
+              </select>
+            </div>
           </div>
-          <div class="campo" style="justify-content: flex-end;">
-            <button type="button" class="boton boton-primario" id="boton-generar-reporte">Generar</button>
+          <div class="atajos" id="atajos-fechas">
+            <button type="button" class="boton boton-secundario" data-atajo="mes">Este mes</button>
+            <button type="button" class="boton boton-secundario" data-atajo="mes-anterior">Mes anterior</button>
+            <button type="button" class="boton boton-secundario" data-atajo="anio">Este año</button>
           </div>
-        </div>
-      </section>
+          <button type="button" class="boton boton-primario" id="boton-generar-reporte" style="width: 100%; margin-top: 12px;">Generar reporte</button>
+          <p class="resumen-visor" id="visor-resumen"></p>
+        </aside>
 
-      <section class="panel" id="panel-resultado" style="display: none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 10px;">
-          <h2 id="resultado-titulo" style="margin:0;"></h2>
-          <div style="display:flex; gap:8px;">
-            <button type="button" class="boton boton-secundario" id="boton-imprimir-reporte">🖨️ Imprimir</button>
-            <button type="button" class="boton boton-secundario" id="boton-csv-reporte">Exportar a Excel (CSV)</button>
-          </div>
+        <button type="button" class="pestana-filtros" id="boton-mostrar-filtros" title="Mostrar filtros">» Filtros</button>
+
+        <div class="paginas-scroll" id="paginas-informe">
+          <p class="paginas-vacio">Elige el reporte y los filtros a la izquierda, y presiona <b>Generar reporte</b>.</p>
         </div>
-        <div style="overflow-x: auto;"><table id="tabla-reporte"></table></div>
-      </section>
+      </div>
     </main>
-  </div>
-
-  <div id="modal-imprimir" style="display: none; position: fixed; inset: 0; background: rgba(22,35,61,0.6); z-index: 940; overflow-y: auto; padding: 32px 16px; align-items: flex-start; justify-content: center;">
-    <div style="background: var(--papel-panel); border-radius: var(--radio); max-width: 420px; width: 100%; margin: 0 auto; padding: 24px; position: relative;">
-      <button type="button" id="boton-cerrar-modal-imprimir"
-        style="position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 22px; cursor: pointer; color: var(--texto-suave);">✕</button>
-      <h2>Imprimir</h2>
-      <div class="campo">
-        <label for="select-formato-imprimir">Formato</label>
-        <select id="select-formato-imprimir"></select>
-      </div>
-      <div class="acciones-formulario">
-        <button type="button" class="boton boton-primario" id="boton-confirmar-imprimir">Imprimir</button>
-        <button type="button" class="boton boton-secundario" id="boton-cancelar-imprimir">Cancelar</button>
-      </div>
-    </div>
   </div>
 
   <script src="js/config.js"></script>
   <script src="js/utilidades.js"></script>
   <script src="js/navegacion.js"></script>
-  <script src="js/plantillas-impresion.js"></script>
-  <script src="js/reportes-contables.js"></script>
+  <script src="js/reportes-contables.js?v=2"></script>
 </body>
 </html>
